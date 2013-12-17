@@ -1,4 +1,6 @@
-%token CLASS EOF
+%token EOF CLASS STATIC 
+%token OPENBRACKET CLOSEBRACKET
+%token SEMICOLON
 %token <string> UIDENT
 %token <string> LIDENT
 
@@ -8,5 +10,12 @@
 
 %%
 code:
-  |CLASS classname=UIDENT EOF {Class(classname)}
+  |CLASS classname=UIDENT EOF OPENBRACKET attribute_or_method CLOSEBRACKET {Class(classname)}
+attribute_or_method:
+  |attribute {}
+  |class_method {}
+attribute:
+  |STATIC? UIDENT LIDENT (EQUAL expr)? SEMICOLON {}
+class_method:
+expr:
 %%
