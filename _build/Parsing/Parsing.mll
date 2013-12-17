@@ -13,7 +13,6 @@ let digit = ['0'-'9']
 
 rule token = parse
   |"class "+uppercase_word {Class(uppercase_word)}
-  |eof {EOF} 
   |_ {raise new Unexpected_syntax}
 
 {

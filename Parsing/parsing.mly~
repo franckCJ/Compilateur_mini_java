@@ -1,0 +1,12 @@
+%token CLASS EOF
+%token <string> UIDENT
+%token <string> LIDENT
+
+%start minijava
+
+(*%type <*> minijava*)
+
+%%
+minijava:
+  |CLASS 
+%%
