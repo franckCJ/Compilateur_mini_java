@@ -1,4 +1,4 @@
-Compilateur_mini_java
+Compilateur mini java
 =====================
 
 Projet compilateur 3ème année
