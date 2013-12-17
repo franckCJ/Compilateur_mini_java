@@ -1,16 +1,12 @@
-%{
-type Class of string
-%}
-
 %token CLASS EOF
 %token <string> UIDENT
 %token <string> LIDENT
 
-%start minijava
+%start code
 
-(*%type <*> minijava*)
+%type <Ast.minijava> code
 
 %%
-minijava:
-  |CLASS classname=UIDENT {Class(classname)}
+code:
+  |CLASS classname=UIDENT EOF {Class(classname)}
 %%

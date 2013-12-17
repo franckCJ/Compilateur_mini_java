@@ -13,7 +13,7 @@ rule token = parse
   |lowercase_word as word {LIDENT word}
   |capitalized_word as word {UIDENT word}
   |eof {EOF} 
-  |_ {raise new Unexpected_syntax}
+  |_ {raise Unexpected_syntax}
 
 {
   let parsing =

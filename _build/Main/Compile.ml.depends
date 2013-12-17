@@ -1,1 +1,1 @@
-Main/Compile.ml: Parsing
+Main/Compile.ml: Lexing_mjava Parsing
