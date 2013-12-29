@@ -1,0 +1,13 @@
+class Main
+{
+	static Integer global_value;
+	static Boolean make_class()
+	{
+	}
+
+	Integer value;
+
+	Integer get_value()
+	{
+	}
+}
