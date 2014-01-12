@@ -1,11 +1,19 @@
 class Main
 {
+	/* multiline comment
+	this comment should be
+	ignored
+	*/
 	static Integer global_value;
 	static Boolean make_class()
 	{
 	}
 
+	//This is a one line comment
+
 	Integer value;
+	String className = "C'est une chaîne de caractère
+	qui continue sur la ligne : \"trop bien\" \\";
 
 	Integer get_value()
 	{

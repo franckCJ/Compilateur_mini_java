@@ -1,15 +1,15 @@
 %{
 %}
 
-%token EOF CLASS STATIC IN IF ELSE NEW INSTANCEOF THIS (*mots clés*)
+%token EOF CLASS STATIC IN IF ELSE NEW INSTANCEOF THIS NULL TRUE FALSE (*mots clés*)
 %token OPENBRACKET CLOSEBRACKET OPENPAR CLOSEPAR (**)
 %token COMMA SEMICOLON DOT ASSIGN (*ponctuation*)
-%token PLUS MINUS MUL DIV MODULO NOT EQUAL DIFF INF INFEQ SUP SUPEQ AND OR(*opérateurs*)
-%token NULL TRUE FALSE (*valeurs*)
+%token PLUS MINUS TIMES DIV MODULO NOT EQUAL DIFF INF INFEQ SUP SUPEQ AND OR(*opérateurs*)
 %token <string> UIDENT
 %token <string> LIDENT
 %token <string> STRING
-%token <int> INT
+%token <int> INTEGER
+%token <bool> BOOL
 
 %start code
 
@@ -27,15 +27,19 @@ attribute_or_method:
   | attr=attribute { attr }
   | meth=class_method { meth }
 attribute:
-  | STATIC? UIDENT name=LIDENT (*(ASSIGN expr)?*) SEMICOLON { Ast.Attribute(name) }
+  | STATIC? UIDENT name=LIDENT instanciation? SEMICOLON { Ast.Attribute(name) }
+instanciation:
+	| ASSIGN expr {}
 class_method:
-	| STATIC? UIDENT name=LIDENT OPENPAR params? CLOSEPAR OPENBRACKET (*expr*) CLOSEBRACKET { Ast.Method(name, []) }
+	| STATIC? UIDENT name=LIDENT OPENPAR params? CLOSEPAR OPENBRACKET expr? CLOSEBRACKET { Ast.Method(name, []) }
 params:
-	| UIDENT LIDENT (*(COMMA UIDENT LIDENT)**) {}
-(*expr:
+	| UIDENT LIDENT sup_params* {}
+sup_params:
+	| COMMA UIDENT LIDENT {}
+expr:
 	| OPENPAR expr CLOSEPAR {}
 	| LIDENT {}
-	| INT {}
+	| INTEGER {}
 	| STRING {}
 	| NULL {}
 	| TRUE {}
@@ -51,12 +55,14 @@ params:
 	| OPENPAR UIDENT CLOSEPAR expr {}
 	| expr INSTANCEOF UIDENT {}
 args:
-	| expr (COMMA expr)* {}
+	| expr sup_args* {}
+sup_args:
+	| COMMA expr {}
 unop:
 	| MINUS {}
 	| NOT {}
 binop:
-(*| SEMICOLON*)
+	| SEMICOLON {} (*Opérateur binaire de séparation de 2 expressions*)
 	| INF {}
 	| INFEQ {}
 	| SUP {}
@@ -65,10 +71,9 @@ binop:
 	| EQUAL {}
 	| PLUS {}
 	| MINUS {}
-	| MUL {}
+	| TIMES {}
 	| DIV {}
-	| MODULO {}
+	(*| MODULO {}
 	| AND {}
-	| OR {}
-	*)
+	| OR {}*)
 %%

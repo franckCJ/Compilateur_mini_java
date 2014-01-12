@@ -1,1 +1,1 @@
-Main/Compile.ml: Lexing_mjava Parsing_mjava
+Main/Compile.ml: Ast Lexing_mjava Location Parsing_mjava

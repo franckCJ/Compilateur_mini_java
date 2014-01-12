@@ -3,6 +3,7 @@ exception Error
 type token = 
   | UIDENT of (string)
   | TRUE
+  | TIMES
   | THIS
   | SUPEQ
   | SUP
@@ -16,11 +17,10 @@ type token =
   | NULL
   | NOT
   | NEW
-  | MUL
   | MODULO
   | MINUS
   | LIDENT of (string)
-  | INT of (int)
+  | INTEGER of (int)
   | INSTANCEOF
   | INFEQ
   | INF
@@ -37,6 +37,7 @@ type token =
   | CLOSEPAR
   | CLOSEBRACKET
   | CLASS
+  | BOOL of (bool)
   | ASSIGN
   | AND
 
