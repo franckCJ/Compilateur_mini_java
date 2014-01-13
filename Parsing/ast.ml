@@ -54,12 +54,16 @@ type minijava =
 (*type de base de l'arbre*)
 type ast = minijava list
 
+(************ Partie Affichage AST ************)
+
+(*Affiche les éléments d'une liste grâce à la fonction func*)
 let rec display_list func elements =
 	match elements with
 		| []  	-> ""
 		| [e]  	-> func e
 		| t::q 	-> (func t) ^ "," ^ (display_list func q)
 
+(*Affichage opérateurs binaires*)
 let string_of_binop = function
 	| Badd 		-> "+"
 	| Bsub 		-> "-"
@@ -76,38 +80,44 @@ let string_of_binop = function
 	| Bor 		-> "||"
 	| Bdel 		-> ";"
 
+(*Affichage opérateurs unaires*)
 let string_of_unop = function
 	| Uopposite -> "-"
 	| Unot 			-> "!"
 
+(*Affichage des expressions*)
 let rec string_of_expr = function
-	| None -> "None"
-	| Self -> "Self"
-	| Integer value -> string_of_int value
-	| String value -> value
-	| Boolean value -> string_of_bool value
-	| Variable name -> name
-	| Object name -> name
-	| Binop (op,expr1,expr2) 	-> "(" ^ (string_of_expr expr1) ^ (string_of_binop op) ^ (string_of_expr expr2) ^ ")"
-	| Unop (op,expr)  				-> (string_of_unop op) ^ (string_of_expr expr)
-	| Assignment (name,expr) 	-> name ^ "=" ^ (string_of_expr expr)
+	| None 																		-> "None"
+	| Self 																		-> "Self"
+	| Integer value 													-> string_of_int value
+	| String value 														-> value
+	| Boolean value 													-> string_of_bool value
+	| Variable name 													-> name
+	| Object name 														-> "new " ^ name
+	| Binop (op,expr1,expr2) 									-> "(" ^ (string_of_expr expr1) ^ (string_of_binop op) ^ (string_of_expr expr2) ^ ")"
+	| Unop (op,expr)  												-> (string_of_unop op) ^ (string_of_expr expr)
+	| Assignment (name,expr) 									-> name ^ "=" ^ (string_of_expr expr)
 	| Locassign (name,val_type,source,target) -> "(" ^ name ^","^ val_type ^ "," ^ (string_of_expr source) ^ ") -> " ^ (string_of_expr target)
-	| Condition (exprif,exprthen,exprelse) -> "Condition(" ^ (string_of_expr exprif) ^ "," ^ (string_of_expr exprthen) ^ "," ^ (string_of_expr exprelse) ^ ")"
-	| Method_call (caller,method_name,args) -> (string_of_expr caller) ^ "." ^ method_name ^ "(" ^ (display_list string_of_expr args) ^ ")"
-	| Cast (expr,val_type) -> "(" ^ val_type ^ ")" ^ (string_of_expr expr)
+	| Condition (exprif,exprthen,exprelse) 		-> "Condition (" ^ (string_of_expr exprif) ^ "," ^ (string_of_expr exprthen) ^ "," ^ (string_of_expr exprelse) ^ ")"
+	| Method_call (caller,method_name,args) 	-> (string_of_expr caller) ^ "." ^ method_name ^ "(" ^ (display_list string_of_expr args) ^ ")"
+	| Cast (expr,val_type) 										-> "(" ^ val_type ^ ")" ^ (string_of_expr expr)
 
+(*Affichage des paramètres de méthodes*)
 let string_of_param = function
 	| Param (name,par_type) -> "(" ^ name ^ "," ^ par_type ^ ")"
 
+(*Affichage attributs ou méthodes d'une classe*)
 let string_of_func_interns = function
 	| Attribute (name,att_type,stat,expr) 		-> "Attribute (" ^ name ^ "," ^ att_type ^ "," ^ (string_of_bool stat) ^ "," ^ (string_of_expr expr) ^ ")"
-	| Method (name,ret_type,stat,params,expr)	-> "Method (" ^ name ^ "," ^ ret_type ^ "," ^ (string_of_bool stat) ^ "," ^ (display_list string_of_param params) ^ "," ^ (string_of_expr expr) ^ ")"
+	| Method (name,ret_type,stat,params,expr)	-> "Method (" ^ name ^ "," ^ ret_type ^ "," ^ (string_of_bool stat) ^ ",[" ^ (display_list string_of_param params) ^ "]," ^ (string_of_expr expr) ^ ")"
 
+(*Affichage des éléments d'un fichier*)
 let string_of_minijava element =
 	match element with
 		| Class (name,interns,mother) -> "Class (" ^ name ^ "," ^ "[" ^ (display_list string_of_func_interns interns) ^ "], " ^ mother ^ ")"
-		| Expression expr -> "Expr (" ^ (string_of_expr expr) ^ ")"
+		| Expression expr 						-> "Expr (" ^ (string_of_expr expr) ^ ")"
 
+(*Fonction à utiliser pour afficher un arbre d'un fichier*)
 let string_of_file file = "File ( " ^ (display_list string_of_minijava file) ^ " )"
 
 (************ Partie Erreurs *********)
@@ -150,4 +160,4 @@ let report_error = function
 	| Open_comment ->
 		print_string "The comment is not closed"
 	| Syntax_error ->
-		print_string "Error in the syntax"
+		print_string "Unvalid syntax in the code"
