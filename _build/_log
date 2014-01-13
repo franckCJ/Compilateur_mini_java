@@ -4,21 +4,30 @@
 # Target: Main/Compile.ml.depends, tags: { extension:ml, file:Main/Compile.ml, ocaml, ocamldep, quiet, traverse, use_menhir, warn_a }
 /usr/bin/ocamldep -modules Main/Compile.ml > Main/Compile.ml.depends # cached
 # Target: Parsing/ast.ml.depends, tags: { extension:ml, file:Parsing/ast.ml, ocaml, ocamldep, quiet, traverse, use_menhir, warn_a }
-/usr/bin/ocamldep -modules Parsing/ast.ml > Parsing/ast.ml.depends # cached
+/usr/bin/ocamldep -modules Parsing/ast.ml > Parsing/ast.ml.depends
 # Target: Utils/Location.mli.depends, tags: { extension:mli, file:Utils/Location.mli, ocaml, ocamldep, quiet, traverse, use_menhir, warn_a }
 /usr/bin/ocamldep -modules Utils/Location.mli > Utils/Location.mli.depends # cached
 # Target: Utils/Location.cmi, tags: { byte, compile, extension:mli, file:Utils/Location.mli, interf, ocaml, quiet, traverse, use_menhir, warn_a }
 /usr/bin/ocamlc -c -w a -I Utils -I Parsing -I Main -o Utils/Location.cmi Utils/Location.mli # cached
-# Target: Parsing/ast.cmo, tags: { byte, compile, extension:cmo, extension:ml, file:Parsing/ast.cmo, file:Parsing/ast.ml, implem, ocaml, quiet, traverse, use_menhir, warn_a }
-/usr/bin/ocamlc -c -w a -I Parsing -I Utils -I Main -o Parsing/ast.cmo Parsing/ast.ml # cached
 # Target: Parsing/lexing_mjava.mll, tags: { extension:mll, file:Parsing/lexing_mjava.mll, lexer, ocaml, ocamllex, quiet, traverse, use_menhir, warn_a }
 /usr/bin/ocamllex -q Parsing/lexing_mjava.mll # cached
 # Target: Parsing/lexing_mjava.ml.depends, tags: { extension:ml, file:Parsing/lexing_mjava.ml, ocaml, ocamldep, quiet, traverse, use_menhir, warn_a }
 /usr/bin/ocamldep -modules Parsing/lexing_mjava.ml > Parsing/lexing_mjava.ml.depends # cached
+# Target: Parsing/ast.cmo, tags: { byte, compile, extension:cmo, extension:ml, file:Parsing/ast.cmo, file:Parsing/ast.ml, implem, ocaml, quiet, traverse, use_menhir, warn_a }
+/usr/bin/ocamlc -c -w a -I Parsing -I Utils -I Main -o Parsing/ast.cmo Parsing/ast.ml
 # Target: Parsing/parsing_mjava.mly.depends, tags: { extension:mly, file:Parsing/parsing_mjava.mly, menhir_ocamldep, ocaml, ocamldep, quiet, traverse, use_menhir, warn_a }
-menhir --raw-depend --ocamldep '/usr/bin/ocamldep -modules' Parsing/parsing_mjava.mly > Parsing/parsing_mjava.mly.depends # cached
+menhir --raw-depend --ocamldep '/usr/bin/ocamldep -modules' Parsing/parsing_mjava.mly > Parsing/parsing_mjava.mly.depends
 # Target: Parsing/parsing_mjava.mly, tags: { byte, compile, extension:mly, file:Parsing/parsing_mjava.mly, menhir, ocaml, parser, quiet, traverse, use_menhir, warn_a }
-menhir --ocamlc '/usr/bin/ocamlc -w a -I Parsing -I Utils -I Main' --infer Parsing/parsing_mjava.mly # cached
+menhir --ocamlc '/usr/bin/ocamlc -w a -I Parsing -I Utils -I Main' --infer Parsing/parsing_mjava.mly
++ menhir --ocamlc '/usr/bin/ocamlc -w a -I Parsing -I Utils -I Main' --infer Parsing/parsing_mjava.mly
+File "Parsing/parsing_mjava.mly", line 25, characters 0-6:
+Warning: the precedence level assigned to NOT is never useful.
+File "Parsing/parsing_mjava.mly", line 25, characters 0-6:
+Warning: the precedence level assigned to UMINUS is never useful.
+File "Parsing/parsing_mjava.mly", line 72, characters 15-21:
+Warning: this %prec declaration is never useful.
+Warning: 6 states have shift/reduce conflicts.
+Warning: 67 shift/reduce conflicts were arbitrarily resolved.
 # Target: Parsing/parsing_mjava.mli.depends, tags: { extension:mli, file:Parsing/parsing_mjava.mli, ocaml, ocamldep, quiet, traverse, use_menhir, warn_a }
 /usr/bin/ocamldep -modules Parsing/parsing_mjava.mli > Parsing/parsing_mjava.mli.depends # cached
 # Target: Parsing/parsing_mjava.cmi, tags: { byte, compile, extension:mli, file:Parsing/parsing_mjava.mli, interf, ocaml, quiet, traverse, use_menhir, warn_a }
@@ -34,9 +43,9 @@ menhir --ocamlc '/usr/bin/ocamlc -w a -I Parsing -I Utils -I Main' --infer Parsi
 # Target: Utils/Location.cmo, tags: { byte, compile, extension:cmo, extension:ml, file:Utils/Location.cmo, file:Utils/Location.ml, implem, ocaml, quiet, traverse, use_menhir, warn_a }
 /usr/bin/ocamlc -c -w a -I Utils -I Parsing -I Main -o Utils/Location.cmo Utils/Location.ml # cached
 # Target: Parsing/parsing_mjava.ml.depends, tags: { extension:ml, file:Parsing/parsing_mjava.ml, ocaml, ocamldep, quiet, traverse, use_menhir, warn_a }
-/usr/bin/ocamldep -modules Parsing/parsing_mjava.ml > Parsing/parsing_mjava.ml.depends # cached
+/usr/bin/ocamldep -modules Parsing/parsing_mjava.ml > Parsing/parsing_mjava.ml.depends
 # Target: Parsing/parsing_mjava.cmo, tags: { byte, compile, extension:cmo, extension:ml, file:Parsing/parsing_mjava.cmo, file:Parsing/parsing_mjava.ml, implem, ocaml, quiet, traverse, use_menhir, warn_a }
-/usr/bin/ocamlc -c -w a -I Parsing -I Utils -I Main -o Parsing/parsing_mjava.cmo Parsing/parsing_mjava.ml # cached
+/usr/bin/ocamlc -c -w a -I Parsing -I Utils -I Main -o Parsing/parsing_mjava.cmo Parsing/parsing_mjava.ml
 # Target: Main/Main.byte, tags: { byte, dont_link_with, extension:byte, file:Main/Main.byte, link, ocaml, program, quiet, traverse, use_menhir, warn_a }
 /usr/bin/ocamlc Utils/Location.cmo Parsing/ast.cmo Parsing/parsing_mjava.cmo Parsing/lexing_mjava.cmo Main/Compile.cmo Main/Main.cmo -o Main/Main.byte # cached
 # Compilation successful.

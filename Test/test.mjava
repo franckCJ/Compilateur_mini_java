@@ -1,22 +1,32 @@
 class Main
 {
-	/* multiline comment
-	this comment should be
-	ignored
-	*/
-	static Boolean global_state;
+	static Boolean global_state = true;
 	static Integer global_value;
 	static Boolean make_class()
 	{
-		global_state
+		if ((global_value > 3) || (global_value <= -5)) {
+			global_state
+		}
+		else {
+			false
+		}
 	}
 
-	//This is a one line comment
-
-  String className = "C'est une chaîne de caractère qui continue sur la ligne : \"trop bien\" ";
-
-  Integer get_value()
+  Integer get_value(Integer temp_value, Boolean exact)
 	{
-		value
+		if (!exact) {
+			value = global_value;
+			value
+		}
+		else {
+			193094 - -8
+		}
+	}
+
+	String local_string = null;
+
+	Integer count()
+	{
+		local_string.length(3)
 	}
 }

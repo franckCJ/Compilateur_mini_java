@@ -4,18 +4,21 @@
 	open Location
 }
 
+(* Déclaration des différentes expressions régulières*)
 let space = [' ' '\t']
 let end_line = ['\r' '\n']
 let lowercase_letter = ['a'-'z'] 
 let uppercase_letter = ['A'-'Z']
 let word = ('_'|lowercase_letter|uppercase_letter)*
-let lowercase_word = lowercase_letter word
-let capitalized_word = uppercase_letter word 
+let lowercase_word = lowercase_letter word (*lident*)
+let capitalized_word = uppercase_letter word (*uident*)
 let digit = ['0'-'9']
 let number = digit+
 let line_comment = "//" [^'\n']* '\n'
 let multiline_comment = "/*"
 
+(* Règle permettant de lire une chaine de caractère tout en détectant les caractères échappés
+	 et les sauts de lignes*)
 rule read_string current_string = parse
 	| '\n' { incr_line lexbuf; read_string current_string lexbuf }
 	| '"' { current_string }
@@ -26,12 +29,16 @@ rule read_string current_string = parse
 	| "\\n" { read_string (current_string ^ "\n") lexbuf }
 	| _ as c { read_string (current_string ^ (Char.escaped c)) lexbuf }
 
+(* Détection des sauts de ligne dans un commentaire multilignes, et erreur si celui-ci
+   n'est pas fermé*)
 and read_comment = parse
 	| '\n' { incr_line lexbuf; read_comment lexbuf }
 	| "*/" { token lexbuf }
 	| eof { raise (Compilation_Error (Open_comment, (curr lexbuf))) }
 	| _ { read_comment lexbuf }
 
+(* token exécute l'analyse lexicale du fichier en entrée, et envoie les types formattés
+	 pour l'analyse syntaxique*)
 and token = parse
 	| space+ { token lexbuf }
 	| end_line { incr_line lexbuf; token lexbuf }
@@ -54,14 +61,12 @@ and token = parse
   | "null" { NULL }
   | "true" { TRUE }
   | "false" { FALSE }
-  | lowercase_word as word { print_endline word; LIDENT word }
-  | capitalized_word as word { print_endline word; UIDENT word }
-  | '{' { print_endline "open"; OPENBRACKET }
-  | '}' { print_endline "close"; CLOSEBRACKET }
-  | '(' { print_endline "openPar"; OPENPAR }
-  | ')' { print_endline "closePar"; CLOSEPAR }
+  | '{' { OPENBRACKET }
+  | '}' { CLOSEBRACKET }
+  | '(' { OPENPAR }
+  | ')' { CLOSEPAR }
   | ',' { COMMA }
-  | ';' { print_endline "semicolon"; SEMICOLON }
+  | ';' { SEMICOLON }
   | '.' { DOT }
   | '+' { PLUS }
   | '-' { MINUS }
@@ -79,6 +84,8 @@ and token = parse
   | "&&" { AND }
   | "||" { OR }
   | eof { EOF } 
+  | lowercase_word as word { LIDENT word }
+  | capitalized_word as word { UIDENT word }
   | _ as c { raise (Compilation_Error (Unexpected_syntax c, curr lexbuf)) }
 
 {

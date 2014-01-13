@@ -274,7 +274,32 @@ and _menhir_goto_class_or_expr : _menhir_env -> 'ttv_tail -> _menhir_state -> (A
         _menhir_env._menhir_shifted <- (-1);
         _menhir_errorcase _menhir_env (Obj.magic _menhir_stack) MenhirState98
 
-and _menhir_goto_attribute_or_method : _menhir_env -> 'ttv_tail -> _menhir_state -> (Ast.minijava) -> 'ttv_return =
+and _menhir_goto_instanciation : _menhir_env -> 'ttv_tail -> (Ast.expression) -> 'ttv_return =
+  fun _menhir_env _menhir_stack _v ->
+    let _menhir_stack = (_menhir_stack, _v) in
+    let _menhir_stack = Obj.magic _menhir_stack in
+    assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
+    let _tok = _menhir_env._menhir_token in
+    match _tok with
+    | SEMICOLON ->
+        let _menhir_stack = Obj.magic _menhir_stack in
+        let _ = _menhir_discard _menhir_env in
+        let _menhir_stack = Obj.magic _menhir_stack in
+        let ((((_menhir_stack, _menhir_s, _1), _2), _3), _4) = _menhir_stack in
+        let _v : (Ast.class_intern) =                                                  ( Attribute (_3,_2,_1,_4) ) in
+        let _menhir_stack = Obj.magic _menhir_stack in
+        let _menhir_stack = Obj.magic _menhir_stack in
+        let _1 = _v in
+        let _v : (Ast.class_intern) =               ( _1 ) in
+        _menhir_goto_attribute_or_method _menhir_env _menhir_stack _menhir_s _v
+    | _ ->
+        assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
+        _menhir_env._menhir_shifted <- (-1);
+        let _menhir_stack = Obj.magic _menhir_stack in
+        let ((((_menhir_stack, _menhir_s, _), _), _), _) = _menhir_stack in
+        _menhir_errorcase _menhir_env (Obj.magic _menhir_stack) _menhir_s
+
+and _menhir_goto_attribute_or_method : _menhir_env -> 'ttv_tail -> _menhir_state -> (Ast.class_intern) -> 'ttv_return =
   fun _menhir_env _menhir_stack _menhir_s _v ->
     let _menhir_stack = (_menhir_stack, _menhir_s, _v) in
     let _menhir_stack = Obj.magic _menhir_stack in
@@ -503,7 +528,7 @@ and _menhir_run44 : _menhir_env -> 'ttv_tail -> 'ttv_return =
     let _v : (Ast.binop) =        ( Band ) in
     _menhir_goto_binop _menhir_env _menhir_stack _v
 
-and _menhir_goto_list_attribute_or_method_ : _menhir_env -> 'ttv_tail -> _menhir_state -> (Ast.minijava list) -> 'ttv_return =
+and _menhir_goto_list_attribute_or_method_ : _menhir_env -> 'ttv_tail -> _menhir_state -> (Ast.class_intern list) -> 'ttv_return =
   fun _menhir_env _menhir_stack _menhir_s _v ->
     let _menhir_stack = (_menhir_stack, _menhir_s, _v) in
     match _menhir_s with
@@ -525,7 +550,7 @@ and _menhir_goto_list_attribute_or_method_ : _menhir_env -> 'ttv_tail -> _menhir
                 let _menhir_stack = Obj.magic _menhir_stack in
                 let _menhir_stack = Obj.magic _menhir_stack in
                 let _1 = _v in
-                let _v : (Ast.minijava) =                  ( _1 ) in
+                let _v : (Ast.minijava) =                                                                   ( _1 ) in
                 _menhir_goto_class_or_expr _menhir_env _menhir_stack _menhir_s _v
             | _ ->
                 assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
@@ -543,7 +568,7 @@ and _menhir_goto_list_attribute_or_method_ : _menhir_env -> 'ttv_tail -> _menhir
         let _menhir_stack = Obj.magic _menhir_stack in
         let _menhir_stack = Obj.magic _menhir_stack in
         let ((_menhir_stack, _menhir_s, x), _, xs) = _menhir_stack in
-        let _v : (Ast.minijava list) =     ( x :: xs ) in
+        let _v : (Ast.class_intern list) =     ( x :: xs ) in
         _menhir_goto_list_attribute_or_method_ _menhir_env _menhir_stack _menhir_s _v
     | _ ->
         _menhir_fail ()
@@ -614,28 +639,7 @@ and _menhir_goto_static : _menhir_env -> 'ttv_tail -> _menhir_state -> (bool) ->
             | SEMICOLON ->
                 let _menhir_stack = Obj.magic _menhir_stack in
                 let _v : (Ast.expression) =    ( None ) in
-                let _menhir_stack = (_menhir_stack, _v) in
-                let _menhir_stack = Obj.magic _menhir_stack in
-                assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
-                let _tok = _menhir_env._menhir_token in
-                (match _tok with
-                | SEMICOLON ->
-                    let _menhir_stack = Obj.magic _menhir_stack in
-                    let _ = _menhir_discard _menhir_env in
-                    let _menhir_stack = Obj.magic _menhir_stack in
-                    let ((((_menhir_stack, _menhir_s, _1), _2), _3), _4) = _menhir_stack in
-                    let _v : (Ast.minijava) =                                                  ( Attribute (_3,_2,_1,_4) ) in
-                    let _menhir_stack = Obj.magic _menhir_stack in
-                    let _menhir_stack = Obj.magic _menhir_stack in
-                    let _1 = _v in
-                    let _v : (Ast.minijava) =               ( _1 ) in
-                    _menhir_goto_attribute_or_method _menhir_env _menhir_stack _menhir_s _v
-                | _ ->
-                    assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
-                    _menhir_env._menhir_shifted <- (-1);
-                    let _menhir_stack = Obj.magic _menhir_stack in
-                    let ((((_menhir_stack, _menhir_s, _), _), _), _) = _menhir_stack in
-                    _menhir_errorcase _menhir_env (Obj.magic _menhir_stack) _menhir_s)
+                _menhir_goto_instanciation _menhir_env _menhir_stack _v
             | _ ->
                 assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
                 _menhir_env._menhir_shifted <- (-1);
@@ -1219,15 +1223,13 @@ and _menhir_goto_expr : _menhir_env -> 'ttv_tail -> _menhir_state -> (Ast.expres
             _menhir_run28 _menhir_env (Obj.magic _menhir_stack)
         | PLUS ->
             _menhir_run27 _menhir_env (Obj.magic _menhir_stack)
-        | SEMICOLON ->
-            _menhir_run26 _menhir_env (Obj.magic _menhir_stack)
         | SUP ->
             _menhir_run25 _menhir_env (Obj.magic _menhir_stack)
         | SUPEQ ->
             _menhir_run24 _menhir_env (Obj.magic _menhir_stack)
         | TIMES ->
             _menhir_run23 _menhir_env (Obj.magic _menhir_stack)
-        | CLASS | CLOSEBRACKET | CLOSEPAR | COMMA | EOF | FALSE | IF | IN | INTEGER _ | LIDENT _ | NEW | NOT | NULL | OPENPAR | STRING _ | THIS | TRUE | UIDENT _ ->
+        | CLASS | CLOSEBRACKET | CLOSEPAR | COMMA | EOF | FALSE | IF | IN | INTEGER _ | LIDENT _ | NEW | NOT | NULL | OPENPAR | SEMICOLON | STRING _ | THIS | TRUE | UIDENT _ ->
             let _menhir_stack = Obj.magic _menhir_stack in
             let ((_menhir_stack, _menhir_s, _1), _, _3) = _menhir_stack in
             let _v : (Ast.expression) =                       ( Assignment (_1,_3) ) in
@@ -1473,11 +1475,11 @@ and _menhir_goto_expr : _menhir_env -> 'ttv_tail -> _menhir_state -> (Ast.expres
             let _ = _menhir_discard _menhir_env in
             let _menhir_stack = Obj.magic _menhir_stack in
             let (((((_menhir_stack, _menhir_s, _1), _2), _3), _, _5), _, _8) = _menhir_stack in
-            let _v : (Ast.minijava) =                                                                               ( Method(_3,_2,_1,_5,_8) ) in
+            let _v : (Ast.class_intern) =                                                                               ( Method(_3,_2,_1,_5,_8) ) in
             let _menhir_stack = Obj.magic _menhir_stack in
             let _menhir_stack = Obj.magic _menhir_stack in
             let _1 = _v in
-            let _v : (Ast.minijava) =                  ( _1 ) in
+            let _v : (Ast.class_intern) =                  ( _1 ) in
             _menhir_goto_attribute_or_method _menhir_env _menhir_stack _menhir_s _v
         | DIFF ->
             _menhir_run41 _menhir_env (Obj.magic _menhir_stack)
@@ -1544,14 +1546,17 @@ and _menhir_goto_expr : _menhir_env -> 'ttv_tail -> _menhir_state -> (Ast.expres
             _menhir_run28 _menhir_env (Obj.magic _menhir_stack)
         | PLUS ->
             _menhir_run27 _menhir_env (Obj.magic _menhir_stack)
-        | SEMICOLON ->
-            _menhir_run26 _menhir_env (Obj.magic _menhir_stack)
         | SUP ->
             _menhir_run25 _menhir_env (Obj.magic _menhir_stack)
         | SUPEQ ->
             _menhir_run24 _menhir_env (Obj.magic _menhir_stack)
         | TIMES ->
             _menhir_run23 _menhir_env (Obj.magic _menhir_stack)
+        | SEMICOLON ->
+            let _menhir_stack = Obj.magic _menhir_stack in
+            let (_menhir_stack, _, _2) = _menhir_stack in
+            let _v : (Ast.expression) =                ( _2 ) in
+            _menhir_goto_instanciation _menhir_env _menhir_stack _v
         | _ ->
             assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
             _menhir_env._menhir_shifted <- (-1);
@@ -1598,7 +1603,7 @@ and _menhir_goto_expr : _menhir_env -> 'ttv_tail -> _menhir_state -> (Ast.expres
         | CLASS | EOF | FALSE | IF | INTEGER _ | LIDENT _ | NEW | NOT | NULL | OPENPAR | STRING _ | THIS | TRUE | UIDENT _ ->
             let _menhir_stack = Obj.magic _menhir_stack in
             let (_menhir_stack, _menhir_s, _1) = _menhir_stack in
-            let _v : (Ast.minijava) =         ( Expression _1 ) in
+            let _v : (Ast.minijava) =                                                                                 ( Expression _1 ) in
             _menhir_goto_class_or_expr _menhir_env _menhir_stack _menhir_s _v
         | _ ->
             assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
@@ -1611,7 +1616,7 @@ and _menhir_goto_expr : _menhir_env -> 'ttv_tail -> _menhir_state -> (Ast.expres
 
 and _menhir_reduce44 : _menhir_env -> 'ttv_tail -> _menhir_state -> 'ttv_return =
   fun _menhir_env _menhir_stack _menhir_s ->
-    let _v : (Ast.minijava list) =     ( [] ) in
+    let _v : (Ast.class_intern list) =     ( [] ) in
     _menhir_goto_list_attribute_or_method_ _menhir_env _menhir_stack _menhir_s _v
 
 and _menhir_reduce52 : _menhir_env -> 'ttv_tail -> _menhir_state -> 'ttv_return =

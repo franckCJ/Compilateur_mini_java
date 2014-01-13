@@ -1,5 +1,6 @@
 open Location
 
+(*type opérateur binaire*)
 type binop =
 	| Badd | Bsub
 	| Bmul | Bdiv | Bmod
@@ -8,10 +9,12 @@ type binop =
 	| Band | Bor
 	| Bdel
 
+(*type opérateur unaire*)
 type unop =
 	| Uopposite
 	| Unot
 
+(*type permettant de gérer les expressions dans l'arbre*)
 type expression =
 	| None
 	| Self
@@ -29,22 +32,32 @@ type expression =
 	| Cast of expression * string
 	| Instance of expression * string
 
+(*type correspondant au paramètre d'une méthode*)
 type param =
 	| Param of string * string
 
-type minijava =
-	| File of minijava list
-	| Class of string * minijava list
+(*Eléments internes de la classe : méthodes ou attributs*)
+type class_intern =
 	(*methode : nom+type+static?+valeur*)
 	| Attribute of string * string * bool * expression
 	(*methode : nom+type+static?+liste param+corps*)
 	| Method of string * string * bool * param list * expression
+
+(*types de base de l'arbre*)
+type minijava =
+	| File of minijava list
+	| Class of string * class_intern list
 	| Expression of expression
 
+(*erreurs survenant sur les chaines de caractère*)
 type error_string =
 	| Unvalid_escape
 	| Open_string
 
+(* Erreurs levées par le parser si besoin
+	 Aucune des tentatives de gestion de l'erreur personnalisée liée au non respect des règles
+	 de grammaire n'a été un succès. Gestion directement dans le fichier compile.ml
+*)
 type error =
 	| Unexpected_syntax of char
 	| Number_Exception of string
@@ -52,8 +65,10 @@ type error =
 	| Open_comment
 	| Syntax_error
 
+(*Erreur envoyée contenant le type de l'erreur et se localisation*)
 exception Compilation_Error of error * Location.t
 
+(* Impression selon le type d'erreur levée *)
 let report_error = function
 	| Unexpected_syntax c ->
 		print_string "Wrong character '";
@@ -66,7 +81,7 @@ let report_error = function
 	| Unvalid_string kind ->
 		(match kind with
 			| Unvalid_escape ->
-				print_string "The character \ is not escaping an other character"
+				print_string "The character \\ is not escaping an other character"
 			| Open_string ->
 				print_string "The string is not closed")
 	| Open_comment ->

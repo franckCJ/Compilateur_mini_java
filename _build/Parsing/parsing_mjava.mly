@@ -15,6 +15,7 @@
 %type <Ast.minijava> code
 
 %left SEMICOLON
+%nonassoc ASSIGN
 %left OR
 %left AND
 %left EQUAL DIFF
@@ -25,10 +26,7 @@
 
 %%
 code:
-	| class_or_expr* EOF { File($1) }
-class_or_expr:
-	| program_class { $1 }
-	| expr { Expression $1 }
+	| class_or_expr* EOF { File($1) } class_or_expr: | program_class { $1 } | expr { Expression $1 }
 program_class:
   | CLASS UIDENT OPENBRACKET attribute_or_method* CLOSEBRACKET EOF { Class($2,$4) }
 attribute_or_method:
