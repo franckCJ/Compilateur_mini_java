@@ -25,51 +25,51 @@
 
 %%
 code:
-	| e=class_or_expr* EOF { File(e) }
+	| class_or_expr* EOF { File($1) }
 class_or_expr:
-	| current_class=program_class { current_class }
-	| current_expr=expr { Expression current_expr }
+	| program_class { $1 }
+	| expr { Expression $1 }
 program_class:
-  | CLASS classname=UIDENT OPENBRACKET elements=attribute_or_method* CLOSEBRACKET EOF { Class(classname, elements) }
+  | CLASS UIDENT OPENBRACKET attribute_or_method* CLOSEBRACKET EOF { Class($2,$4) }
 attribute_or_method:
-  | attr=attribute { attr }
-  | meth=class_method { meth }
+  | attribute { $1 }
+  | class_method { $1 }
 attribute:
-  | stat=static val_type=UIDENT name=LIDENT value=instanciation SEMICOLON { Attribute (name,val_type,stat,value) }
+  | static UIDENT LIDENT instanciation SEMICOLON { Attribute ($3,$2,$1,$4) }
 instanciation:
 	| { None }
-	| ASSIGN value=expr { print_endline "test"; value }
+	| ASSIGN expr { $2 }
 class_method:
-	| stat=static val_type=UIDENT name=LIDENT OPENPAR param_list=params CLOSEPAR OPENBRACKET body=expr CLOSEBRACKET { Method(name,val_type,stat,param_list,body) }
+	| static UIDENT LIDENT OPENPAR params CLOSEPAR OPENBRACKET expr CLOSEBRACKET { Method($3,$2,$1,$5,$8) }
 params:
 	| { [] }
-	| val_type=UIDENT name=LIDENT { [Param (name,val_type)] }
-	| val_type=UIDENT name=LIDENT COMMA param_list=params { (Param (name,val_type))::param_list }
+	| UIDENT LIDENT { [Param ($2,$1)] }
+	| UIDENT LIDENT COMMA params { (Param ($2,$1))::$4 }
 static:
 	| { false }
 	| STATIC  { true }
 expr:
-	| OPENPAR value=expr CLOSEPAR { value }
-	| name=LIDENT { Variable name }
-	| value=INTEGER { Integer value }
-	| value=STRING { String value }
+	| OPENPAR expr CLOSEPAR { $2 }
+	| LIDENT { Variable $1 }
+	| INTEGER { Integer $1 }
+	| STRING { String $1 }
 	| NULL { None }
 	| TRUE { Boolean true }
 	| FALSE { Boolean false }
 	| THIS { Self }
-	| op=unop value=expr { Unop (op,value) }
-	| value1=expr op=binop value2=expr { Binop (op,value1,value2) }
-	| name=LIDENT ASSIGN value=expr { Assignment (name,value) }
-	| val_type=UIDENT name=LIDENT ASSIGN value=expr IN target=expr { Locassign (name,val_type,value,target) }
-	| IF OPENPAR expr_if=expr CLOSEPAR OPENBRACKET expr_then=expr CLOSEBRACKET ELSE OPENBRACKET expr_else=expr CLOSEBRACKET { Condition (expr_if,expr_then, expr_else) }
-	| container=expr DOT method_name=LIDENT OPENPAR arg_list=args CLOSEPAR { Method_call (container,method_name,arg_list) }
-	| NEW val_type=UIDENT { Object val_type }
-	| OPENPAR val_type=UIDENT CLOSEPAR value=expr { Cast (value,val_type) }
-	| value=expr INSTANCEOF val_type=UIDENT { Instance (value,val_type) }
+	| unop expr { Unop ($1,$2) }
+	| expr binop expr { Binop ($2,$1,$3) }
+	| LIDENT ASSIGN expr { Assignment ($1,$3) }
+	| UIDENT LIDENT ASSIGN expr IN expr { Locassign ($2,$1,$4,$6) }
+	| IF OPENPAR expr CLOSEPAR OPENBRACKET expr CLOSEBRACKET ELSE OPENBRACKET expr CLOSEBRACKET { Condition ($3,$6,$10) }
+	| expr DOT LIDENT OPENPAR args CLOSEPAR { Method_call ($1,$3,$5) }
+	| NEW UIDENT { Object $2 }
+	| OPENPAR UIDENT CLOSEPAR expr { Cast ($4,$2) }
+	| expr INSTANCEOF UIDENT { Instance ($1,$3) }
 args:
 	| { [] }
-	| value=expr { [value] }
-	| value=expr COMMA values_list=args { value::values_list }
+	| expr { [$1] }
+	| expr COMMA args { $1::$3 }
 unop:
 	| MINUS %prec UMINUS { Uopposite }
 	| NOT { Unot }

@@ -83,8 +83,8 @@ let rec _menhir_goto_params : _menhir_env -> 'ttv_tail -> _menhir_state -> (Ast.
     | MenhirState75 ->
         let _menhir_stack = Obj.magic _menhir_stack in
         let _menhir_stack = Obj.magic _menhir_stack in
-        let (((_menhir_stack, _menhir_s, val_type), name), _, param_list) = _menhir_stack in
-        let _v : (Ast.param list) =                                                        ( (Param (name,val_type))::param_list ) in
+        let (((_menhir_stack, _menhir_s, _1), _2), _, _4) = _menhir_stack in
+        let _v : (Ast.param list) =                               ( (Param (_2,_1))::_4 ) in
         _menhir_goto_params _menhir_env _menhir_stack _menhir_s _v
     | MenhirState72 ->
         let _menhir_stack = Obj.magic _menhir_stack in
@@ -211,8 +211,8 @@ and _menhir_run73 : _menhir_env -> 'ttv_tail -> _menhir_state -> (string) -> 'tt
                 _menhir_errorcase _menhir_env (Obj.magic _menhir_stack) MenhirState75)
         | CLOSEPAR ->
             let _menhir_stack = Obj.magic _menhir_stack in
-            let ((_menhir_stack, _menhir_s, val_type), name) = _menhir_stack in
-            let _v : (Ast.param list) =                                ( [Param (name,val_type)] ) in
+            let ((_menhir_stack, _menhir_s, _1), _2) = _menhir_stack in
+            let _v : (Ast.param list) =                  ( [Param (_2,_1)] ) in
             _menhir_goto_params _menhir_env _menhir_stack _menhir_s _v
         | _ ->
             assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
@@ -299,8 +299,8 @@ and _menhir_goto_args : _menhir_env -> 'ttv_tail -> _menhir_state -> (Ast.expres
     | MenhirState42 ->
         let _menhir_stack = Obj.magic _menhir_stack in
         let _menhir_stack = Obj.magic _menhir_stack in
-        let ((_menhir_stack, _menhir_s, value), _, values_list) = _menhir_stack in
-        let _v : (Ast.expression list) =                                      ( value::values_list ) in
+        let ((_menhir_stack, _menhir_s, _1), _, _3) = _menhir_stack in
+        let _v : (Ast.expression list) =                    ( _1::_3 ) in
         _menhir_goto_args _menhir_env _menhir_stack _menhir_s _v
     | MenhirState38 ->
         let _menhir_stack = Obj.magic _menhir_stack in
@@ -311,8 +311,8 @@ and _menhir_goto_args : _menhir_env -> 'ttv_tail -> _menhir_state -> (Ast.expres
             let _menhir_stack = Obj.magic _menhir_stack in
             let _ = _menhir_discard _menhir_env in
             let _menhir_stack = Obj.magic _menhir_stack in
-            let (((_menhir_stack, _menhir_s, container), method_name), _, arg_list) = _menhir_stack in
-            let _v : (Ast.expression) =                                                                         ( Method_call (container,method_name,arg_list) ) in
+            let (((_menhir_stack, _menhir_s, _1), _3), _, _5) = _menhir_stack in
+            let _v : (Ast.expression) =                                          ( Method_call (_1,_3,_5) ) in
             _menhir_goto_expr _menhir_env _menhir_stack _menhir_s _v
         | _ ->
             assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
@@ -392,9 +392,9 @@ and _menhir_run31 : _menhir_env -> 'ttv_tail * _menhir_state * (Ast.expression) 
         let _menhir_stack = Obj.magic _menhir_stack in
         let _ = _menhir_discard _menhir_env in
         let _menhir_stack = Obj.magic _menhir_stack in
-        let val_type = _v in
-        let (_menhir_stack, _menhir_s, value) = _menhir_stack in
-        let _v : (Ast.expression) =                                          ( Instance (value,val_type) ) in
+        let _3 = _v in
+        let (_menhir_stack, _menhir_s, _1) = _menhir_stack in
+        let _v : (Ast.expression) =                           ( Instance (_1,_3) ) in
         _menhir_goto_expr _menhir_env _menhir_stack _menhir_s _v
     | _ ->
         assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
@@ -520,12 +520,12 @@ and _menhir_goto_list_attribute_or_method_ : _menhir_env -> 'ttv_tail -> _menhir
                 let _menhir_stack = Obj.magic _menhir_stack in
                 let _ = _menhir_discard _menhir_env in
                 let _menhir_stack = Obj.magic _menhir_stack in
-                let (((_menhir_stack, _menhir_s), classname), _, elements) = _menhir_stack in
-                let _v : (Ast.minijava) =                                                                                       ( Class(classname, elements) ) in
+                let (((_menhir_stack, _menhir_s), _2), _, _4) = _menhir_stack in
+                let _v : (Ast.minijava) =                                                                    ( Class(_2,_4) ) in
                 let _menhir_stack = Obj.magic _menhir_stack in
                 let _menhir_stack = Obj.magic _menhir_stack in
-                let current_class = _v in
-                let _v : (Ast.minijava) =                                ( current_class ) in
+                let _1 = _v in
+                let _v : (Ast.minijava) =                  ( _1 ) in
                 _menhir_goto_class_or_expr _menhir_env _menhir_stack _menhir_s _v
             | _ ->
                 assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
@@ -623,12 +623,12 @@ and _menhir_goto_static : _menhir_env -> 'ttv_tail -> _menhir_state -> (bool) ->
                     let _menhir_stack = Obj.magic _menhir_stack in
                     let _ = _menhir_discard _menhir_env in
                     let _menhir_stack = Obj.magic _menhir_stack in
-                    let ((((_menhir_stack, _menhir_s, stat), val_type), name), value) = _menhir_stack in
-                    let _v : (Ast.minijava) =                                                                           ( Attribute (name,val_type,stat,value) ) in
+                    let ((((_menhir_stack, _menhir_s, _1), _2), _3), _4) = _menhir_stack in
+                    let _v : (Ast.minijava) =                                                  ( Attribute (_3,_2,_1,_4) ) in
                     let _menhir_stack = Obj.magic _menhir_stack in
                     let _menhir_stack = Obj.magic _menhir_stack in
-                    let attr = _v in
-                    let _v : (Ast.minijava) =                    ( attr ) in
+                    let _1 = _v in
+                    let _v : (Ast.minijava) =               ( _1 ) in
                     _menhir_goto_attribute_or_method _menhir_env _menhir_stack _menhir_s _v
                 | _ ->
                     assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
@@ -667,8 +667,8 @@ and _menhir_goto_list_class_or_expr_ : _menhir_env -> 'ttv_tail -> _menhir_state
         | EOF ->
             let _menhir_stack = Obj.magic _menhir_stack in
             let _menhir_stack = Obj.magic _menhir_stack in
-            let (_menhir_stack, _menhir_s, e) = _menhir_stack in
-            let _v : (Ast.minijava) =                         ( File(e) ) in
+            let (_menhir_stack, _menhir_s, _1) = _menhir_stack in
+            let _v : (Ast.minijava) =                       ( File(_1) ) in
             let _menhir_stack = Obj.magic _menhir_stack in
             let _menhir_stack = Obj.magic _menhir_stack in
             let _1 = _v in
@@ -815,8 +815,8 @@ and _menhir_goto_expr : _menhir_env -> 'ttv_tail -> _menhir_state -> (Ast.expres
             _menhir_run23 _menhir_env (Obj.magic _menhir_stack)
         | CLASS | CLOSEBRACKET | CLOSEPAR | COMMA | EOF | FALSE | IF | IN | INTEGER _ | LIDENT _ | NEW | NOT | NULL | OPENPAR | STRING _ | THIS | TRUE | UIDENT _ ->
             let _menhir_stack = Obj.magic _menhir_stack in
-            let ((_menhir_stack, _menhir_s, op), _, value) = _menhir_stack in
-            let _v : (Ast.expression) =                       ( Unop (op,value) ) in
+            let ((_menhir_stack, _menhir_s, _1), _, _2) = _menhir_stack in
+            let _v : (Ast.expression) =              ( Unop (_1,_2) ) in
             _menhir_goto_expr _menhir_env _menhir_stack _menhir_s _v
         | _ ->
             assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
@@ -899,8 +899,8 @@ and _menhir_goto_expr : _menhir_env -> 'ttv_tail -> _menhir_state -> (Ast.expres
             _menhir_run23 _menhir_env (Obj.magic _menhir_stack)
         | CLOSEPAR ->
             let _menhir_stack = Obj.magic _menhir_stack in
-            let (_menhir_stack, _menhir_s, value) = _menhir_stack in
-            let _v : (Ast.expression list) =               ( [value] ) in
+            let (_menhir_stack, _menhir_s, _1) = _menhir_stack in
+            let _v : (Ast.expression list) =         ( [_1] ) in
             _menhir_goto_args _menhir_env _menhir_stack _menhir_s _v
         | _ ->
             assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
@@ -947,8 +947,8 @@ and _menhir_goto_expr : _menhir_env -> 'ttv_tail -> _menhir_state -> (Ast.expres
             _menhir_run23 _menhir_env (Obj.magic _menhir_stack)
         | CLASS | CLOSEBRACKET | CLOSEPAR | COMMA | EOF | FALSE | IF | IN | INTEGER _ | LIDENT _ | NEW | NOT | NULL | OPENPAR | STRING _ | THIS | TRUE | UIDENT _ ->
             let _menhir_stack = Obj.magic _menhir_stack in
-            let (((_menhir_stack, _menhir_s, value1), op), _, value2) = _menhir_stack in
-            let _v : (Ast.expression) =                                     ( Binop (op,value1,value2) ) in
+            let (((_menhir_stack, _menhir_s, _1), _2), _, _3) = _menhir_stack in
+            let _v : (Ast.expression) =                    ( Binop (_2,_1,_3) ) in
             _menhir_goto_expr _menhir_env _menhir_stack _menhir_s _v
         | _ ->
             assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
@@ -1151,8 +1151,8 @@ and _menhir_goto_expr : _menhir_env -> 'ttv_tail -> _menhir_state -> (Ast.expres
             let _menhir_stack = Obj.magic _menhir_stack in
             let _ = _menhir_discard _menhir_env in
             let _menhir_stack = Obj.magic _menhir_stack in
-            let ((((_menhir_stack, _menhir_s), _, expr_if), _, expr_then), _, expr_else) = _menhir_stack in
-            let _v : (Ast.expression) =                                                                                                                          ( Condition (expr_if,expr_then, expr_else) ) in
+            let ((((_menhir_stack, _menhir_s), _, _3), _, _6), _, _10) = _menhir_stack in
+            let _v : (Ast.expression) =                                                                                              ( Condition (_3,_6,_10) ) in
             _menhir_goto_expr _menhir_env _menhir_stack _menhir_s _v
         | DIFF ->
             _menhir_run41 _menhir_env (Obj.magic _menhir_stack)
@@ -1229,8 +1229,8 @@ and _menhir_goto_expr : _menhir_env -> 'ttv_tail -> _menhir_state -> (Ast.expres
             _menhir_run23 _menhir_env (Obj.magic _menhir_stack)
         | CLASS | CLOSEBRACKET | CLOSEPAR | COMMA | EOF | FALSE | IF | IN | INTEGER _ | LIDENT _ | NEW | NOT | NULL | OPENPAR | STRING _ | THIS | TRUE | UIDENT _ ->
             let _menhir_stack = Obj.magic _menhir_stack in
-            let ((_menhir_stack, _menhir_s, name), _, value) = _menhir_stack in
-            let _v : (Ast.expression) =                                  ( Assignment (name,value) ) in
+            let ((_menhir_stack, _menhir_s, _1), _, _3) = _menhir_stack in
+            let _v : (Ast.expression) =                       ( Assignment (_1,_3) ) in
             _menhir_goto_expr _menhir_env _menhir_stack _menhir_s _v
         | _ ->
             assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
@@ -1277,8 +1277,8 @@ and _menhir_goto_expr : _menhir_env -> 'ttv_tail -> _menhir_state -> (Ast.expres
             _menhir_run23 _menhir_env (Obj.magic _menhir_stack)
         | CLASS | CLOSEBRACKET | CLOSEPAR | COMMA | EOF | FALSE | IF | IN | INTEGER _ | LIDENT _ | NEW | NOT | NULL | OPENPAR | STRING _ | THIS | TRUE | UIDENT _ ->
             let _menhir_stack = Obj.magic _menhir_stack in
-            let (((_menhir_stack, _menhir_s), _, val_type), _, value) = _menhir_stack in
-            let _v : (Ast.expression) =                                                ( Cast (value,val_type) ) in
+            let (((_menhir_stack, _menhir_s), _, _2), _, _4) = _menhir_stack in
+            let _v : (Ast.expression) =                                 ( Cast (_4,_2) ) in
             _menhir_goto_expr _menhir_env _menhir_stack _menhir_s _v
         | _ ->
             assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
@@ -1297,8 +1297,8 @@ and _menhir_goto_expr : _menhir_env -> 'ttv_tail -> _menhir_state -> (Ast.expres
             let _menhir_stack = Obj.magic _menhir_stack in
             let _ = _menhir_discard _menhir_env in
             let _menhir_stack = Obj.magic _menhir_stack in
-            let ((_menhir_stack, _menhir_s), _, value) = _menhir_stack in
-            let _v : (Ast.expression) =                                ( value ) in
+            let ((_menhir_stack, _menhir_s), _, _2) = _menhir_stack in
+            let _v : (Ast.expression) =                          ( _2 ) in
             _menhir_goto_expr _menhir_env _menhir_stack _menhir_s _v
         | DIFF ->
             _menhir_run41 _menhir_env (Obj.magic _menhir_stack)
@@ -1452,8 +1452,8 @@ and _menhir_goto_expr : _menhir_env -> 'ttv_tail -> _menhir_state -> (Ast.expres
             _menhir_run23 _menhir_env (Obj.magic _menhir_stack)
         | CLASS | CLOSEBRACKET | CLOSEPAR | COMMA | EOF | FALSE | IF | IN | INTEGER _ | LIDENT _ | NEW | NOT | NULL | OPENPAR | STRING _ | THIS | TRUE | UIDENT _ ->
             let _menhir_stack = Obj.magic _menhir_stack in
-            let ((((_menhir_stack, _menhir_s, val_type), name), _, value), _, target) = _menhir_stack in
-            let _v : (Ast.expression) =                                                                 ( Locassign (name,val_type,value,target) ) in
+            let ((((_menhir_stack, _menhir_s, _1), _2), _, _4), _, _6) = _menhir_stack in
+            let _v : (Ast.expression) =                                      ( Locassign (_2,_1,_4,_6) ) in
             _menhir_goto_expr _menhir_env _menhir_stack _menhir_s _v
         | _ ->
             assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
@@ -1472,12 +1472,12 @@ and _menhir_goto_expr : _menhir_env -> 'ttv_tail -> _menhir_state -> (Ast.expres
             let _menhir_stack = Obj.magic _menhir_stack in
             let _ = _menhir_discard _menhir_env in
             let _menhir_stack = Obj.magic _menhir_stack in
-            let (((((_menhir_stack, _menhir_s, stat), val_type), name), _, param_list), _, body) = _menhir_stack in
-            let _v : (Ast.minijava) =                                                                                                                  ( Method(name,val_type,stat,param_list,body) ) in
+            let (((((_menhir_stack, _menhir_s, _1), _2), _3), _, _5), _, _8) = _menhir_stack in
+            let _v : (Ast.minijava) =                                                                               ( Method(_3,_2,_1,_5,_8) ) in
             let _menhir_stack = Obj.magic _menhir_stack in
             let _menhir_stack = Obj.magic _menhir_stack in
-            let meth = _v in
-            let _v : (Ast.minijava) =                       ( meth ) in
+            let _1 = _v in
+            let _v : (Ast.minijava) =                  ( _1 ) in
             _menhir_goto_attribute_or_method _menhir_env _menhir_stack _menhir_s _v
         | DIFF ->
             _menhir_run41 _menhir_env (Obj.magic _menhir_stack)
@@ -1597,8 +1597,8 @@ and _menhir_goto_expr : _menhir_env -> 'ttv_tail -> _menhir_state -> (Ast.expres
             _menhir_run23 _menhir_env (Obj.magic _menhir_stack)
         | CLASS | EOF | FALSE | IF | INTEGER _ | LIDENT _ | NEW | NOT | NULL | OPENPAR | STRING _ | THIS | TRUE | UIDENT _ ->
             let _menhir_stack = Obj.magic _menhir_stack in
-            let (_menhir_stack, _menhir_s, current_expr) = _menhir_stack in
-            let _v : (Ast.minijava) =                      ( Expression current_expr ) in
+            let (_menhir_stack, _menhir_s, _1) = _menhir_stack in
+            let _v : (Ast.minijava) =         ( Expression _1 ) in
             _menhir_goto_class_or_expr _menhir_env _menhir_stack _menhir_s _v
         | _ ->
             assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
@@ -1757,8 +1757,8 @@ and _menhir_run6 : _menhir_env -> 'ttv_tail -> _menhir_state -> (string) -> 'ttv
   fun _menhir_env _menhir_stack _menhir_s _v ->
     let _ = _menhir_discard _menhir_env in
     let _menhir_stack = Obj.magic _menhir_stack in
-    let value = _v in
-    let _v : (Ast.expression) =                 ( String value ) in
+    let _1 = _v in
+    let _v : (Ast.expression) =           ( String _1 ) in
     _menhir_goto_expr _menhir_env _menhir_stack _menhir_s _v
 
 and _menhir_run7 : _menhir_env -> 'ttv_tail -> _menhir_state -> 'ttv_return =
@@ -1866,9 +1866,9 @@ and _menhir_run12 : _menhir_env -> 'ttv_tail -> _menhir_state -> 'ttv_return =
         let _menhir_stack = Obj.magic _menhir_stack in
         let _ = _menhir_discard _menhir_env in
         let _menhir_stack = Obj.magic _menhir_stack in
-        let val_type = _v in
+        let _2 = _v in
         let (_menhir_stack, _menhir_s) = _menhir_stack in
-        let _v : (Ast.expression) =                        ( Object val_type ) in
+        let _v : (Ast.expression) =               ( Object _2 ) in
         _menhir_goto_expr _menhir_env _menhir_stack _menhir_s _v
     | _ ->
         assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
@@ -1925,8 +1925,8 @@ and _menhir_run15 : _menhir_env -> 'ttv_tail -> _menhir_state -> (string) -> 'tt
             _menhir_errorcase _menhir_env (Obj.magic _menhir_stack) MenhirState16)
     | AND | CLASS | CLOSEBRACKET | CLOSEPAR | COMMA | DIFF | DIV | DOT | EOF | EQUAL | FALSE | IF | IN | INF | INFEQ | INSTANCEOF | INTEGER _ | LIDENT _ | MINUS | MODULO | NEW | NOT | NULL | OPENPAR | OR | PLUS | SEMICOLON | STRING _ | SUP | SUPEQ | THIS | TIMES | TRUE | UIDENT _ ->
         let _menhir_stack = Obj.magic _menhir_stack in
-        let (_menhir_stack, _menhir_s, name) = _menhir_stack in
-        let _v : (Ast.expression) =                ( Variable name ) in
+        let (_menhir_stack, _menhir_s, _1) = _menhir_stack in
+        let _v : (Ast.expression) =           ( Variable _1 ) in
         _menhir_goto_expr _menhir_env _menhir_stack _menhir_s _v
     | _ ->
         assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
@@ -1939,8 +1939,8 @@ and _menhir_run17 : _menhir_env -> 'ttv_tail -> _menhir_state -> (int) -> 'ttv_r
   fun _menhir_env _menhir_stack _menhir_s _v ->
     let _ = _menhir_discard _menhir_env in
     let _menhir_stack = Obj.magic _menhir_stack in
-    let value = _v in
-    let _v : (Ast.expression) =                  ( Integer value ) in
+    let _1 = _v in
+    let _v : (Ast.expression) =            ( Integer _1 ) in
     _menhir_goto_expr _menhir_env _menhir_stack _menhir_s _v
 
 and _menhir_run18 : _menhir_env -> 'ttv_tail -> _menhir_state -> 'ttv_return =

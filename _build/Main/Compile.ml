@@ -7,7 +7,7 @@ let execute lexbuf verbose =
 			print_endline ("Erreur");
 			print_newline ();
 			File []
-		| Error ->
+		| Parsing.Parse_error ->
 			Location.print (Location.curr lexbuf);
 			print_endline ("Parsing Error");
 			print_newline;
