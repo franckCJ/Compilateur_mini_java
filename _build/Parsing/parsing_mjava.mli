@@ -37,7 +37,6 @@ type token =
   | CLOSEPAR
   | CLOSEBRACKET
   | CLASS
-  | BOOL of (bool)
   | ASSIGN
   | AND
 
