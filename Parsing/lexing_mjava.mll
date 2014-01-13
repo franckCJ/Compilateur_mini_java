@@ -51,6 +51,7 @@ and token = parse
 	| line_comment { incr_line lexbuf; token lexbuf }
 	| multiline_comment { read_comment lexbuf }
   | "class" { CLASS }
+  | "extends" {EXTENDS}
   | "static" { STATIC }
   | "in" { IN }
   | "if" { IF }

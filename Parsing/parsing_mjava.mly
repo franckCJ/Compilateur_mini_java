@@ -32,7 +32,7 @@ class_or_expr:
 	| program_class { $1 } 
 	| expr { Expression $1 }
 program_class:
-    | CLASS UIDENT heritage OPENBRACKET attribute_or_method* CLOSEBRACKET EOF { Class ($2,$5,$3) }
+    | CLASS UIDENT heritage OPENBRACKET attribute_or_method* CLOSEBRACKET { Class ($2,$5,$3) }
 heritage:
 	| {""}
     | EXTENDS UIDENT { $2 }

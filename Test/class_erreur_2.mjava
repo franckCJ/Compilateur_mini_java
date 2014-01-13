@@ -1,4 +1,5 @@
 klass ErreurClasse
+// wrong key word
 {
 	Baz qux;
 
