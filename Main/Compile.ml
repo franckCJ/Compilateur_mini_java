@@ -7,10 +7,10 @@ let execute lexbuf verbose =
 			Location.print pos;
 			Ast.report_error kind;
 			print_newline ();
-			File []
+			Ast.File []
 		| Parsing_mjava.Error ->
 			Location.print (Location.curr lexbuf);
 			print_string "Syntax Error";
 			print_newline ();
-			File []
+			Ast.File []
 			
