@@ -41,7 +41,7 @@ type param =
 
 (*Eléments internes de la classe : méthodes ou attributs*)
 type class_intern =
-	(*methode :     nom 	+  type  +static?+ valeur*)
+	(*methode :     nom   +  type  +static?+ valeur*)
 	| Attribute of string * string * bool * expression
 	(*methode :  nom   +  type  +static?+liste params+  corps*)
 	| Method of string * string * bool * param list * expression

@@ -21,14 +21,16 @@ let compile str =
     let input_file = open_in file in
     let lexbuf = Lexing.from_channel input_file in
     Location.init lexbuf file;
-    print_endline "opening file";
-    print_endline file;
+    print_newline ();
+    print_endline ("opening file : " ^ file);
     Compile.execute lexbuf !verbose;
     close_in (input_file)
   with Sys_error s ->
     print_endline ("Can't find file '" ^ file ^ "'")
 
 let _ =
-  print_endline "miniJava compiler";
+  print_endline "#####################";
+  print_endline "# miniJava compiler #";
+  print_endline "#####################";
   Arg.parse ["-v",Arg.Set verbose,"verbose mode"] compile ""
 
