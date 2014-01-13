@@ -1,0 +1,8 @@
+klass ErreurClasse
+{
+	Baz qux;
+
+	Foo bar(Uident lident) {
+		foobar	
+	}
+}

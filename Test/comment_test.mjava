@@ -1,10 +1,6 @@
-class Main
-{
-	/* multiline comment
-	this comment should be
-	ignored
-	*/
+/* multiline comment
+ * this comment should be
+ * ignored
+ */
 
-	//This is a one line comment
-
-}
+//This is a one line comment

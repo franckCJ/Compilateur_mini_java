@@ -1,0 +1,7 @@
+class ErreurClasse
+{
+	Foo bar(Uident lident) {
+		HAHA!
+		// method body is not valid	
+	}
+}

@@ -1,0 +1,9 @@
+class ErreurClasse
+{
+	Baz qux;
+
+	Foo bar(Uident lident) {
+		foobar	
+	}
+
+// bracket left open

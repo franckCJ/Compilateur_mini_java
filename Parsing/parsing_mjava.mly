@@ -2,7 +2,7 @@
 	open Ast
 %}
 
-%token EOF CLASS STATIC IN IF ELSE NEW INSTANCEOF THIS NULL TRUE FALSE (*mots clés*)
+%token EOF CLASS EXTENDS STATIC IN IF ELSE NEW INSTANCEOF THIS NULL TRUE FALSE (*mots clés*)
 %token OPENBRACKET CLOSEBRACKET OPENPAR CLOSEPAR (**)
 %token COMMA SEMICOLON DOT ASSIGN (*ponctuation*)
 %token PLUS MINUS TIMES DIV MODULO NOT EQUAL DIFF INF INFEQ SUP SUPEQ AND OR (*opérateurs*)
@@ -26,14 +26,20 @@
 
 %%
 code:
-	| class_or_expr* EOF { File($1) } class_or_expr: | program_class { $1 } | expr { Expression $1 }
+	| class_or_expr* EOF { File($1) } 
+class_or_expr: 
+	| program_class { $1 } 
+	| expr { Expression $1 }
 program_class:
-  | CLASS UIDENT OPENBRACKET attribute_or_method* CLOSEBRACKET EOF { Class($2,$4) }
+    | CLASS UIDENT heritage OPENBRACKET attribute_or_method* CLOSEBRACKET EOF { Class($2,$5,$3) }
+heritage:
+	| {""}
+    | EXTENDS UIDENT { $2 }
 attribute_or_method:
-  | attribute { $1 }
-  | class_method { $1 }
+    | attribute { $1 }
+    | class_method { $1 }
 attribute:
-  | static UIDENT LIDENT instanciation SEMICOLON { Attribute ($3,$2,$1,$4) }
+    | static UIDENT LIDENT instanciation SEMICOLON { Attribute ($3,$2,$1,$4) }
 instanciation:
 	| { None }
 	| ASSIGN expr { $2 }

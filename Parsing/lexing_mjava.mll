@@ -14,7 +14,7 @@ let lowercase_word = lowercase_letter word (*lident*)
 let capitalized_word = uppercase_letter word (*uident*)
 let digit = ['0'-'9']
 let number = digit+
-let line_comment = "//" [^'\n']* '\n'
+let line_comment = "//" [^'\n']* ('\n'|eof)
 let multiline_comment = "/*"
 
 (* Règle permettant de lire une chaine de caractère tout en détectant les caractères échappés
@@ -87,8 +87,3 @@ and token = parse
   | lowercase_word as word { LIDENT word }
   | capitalized_word as word { UIDENT word }
   | _ as c { raise (Compilation_Error (Unexpected_syntax c, curr lexbuf)) }
-
-{
-  let parsing =
-    print_endline "parsing todo";
-}
