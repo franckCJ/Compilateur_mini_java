@@ -1,5 +1,12 @@
 class Main
 {
+
+}
+
+toto = 0+0
+
+class Test extends Main
+{
 	static Boolean global_state = true;
 	static Integer global_value;
 	static Boolean make_class()

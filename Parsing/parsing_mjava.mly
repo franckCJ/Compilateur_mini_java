@@ -12,7 +12,7 @@
 %token <int> INTEGER
 
 %start code
-%type <Ast.minijava> code
+%type <Ast.ast> code
 
 %left SEMICOLON
 %nonassoc ASSIGN
@@ -26,12 +26,13 @@
 
 %%
 code:
-	| class_or_expr* EOF { File($1) } 
+	| class_or_expr* EOF { $1 }
+	| error				 { raise (Compilation_Error (Syntax_error,Location.symbol_loc $startpos $endpos))} 
 class_or_expr: 
 	| program_class { $1 } 
 	| expr { Expression $1 }
 program_class:
-    | CLASS UIDENT heritage OPENBRACKET attribute_or_method* CLOSEBRACKET EOF { Class($2,$5,$3) }
+    | CLASS UIDENT heritage OPENBRACKET attribute_or_method* CLOSEBRACKET EOF { Class ($2,$5,$3) }
 heritage:
 	| {""}
     | EXTENDS UIDENT { $2 }
@@ -44,10 +45,10 @@ instanciation:
 	| { None }
 	| ASSIGN expr { $2 }
 class_method:
-	| static UIDENT LIDENT OPENPAR params CLOSEPAR OPENBRACKET expr CLOSEBRACKET { Method($3,$2,$1,$5,$8) }
+	| static UIDENT LIDENT OPENPAR params CLOSEPAR OPENBRACKET expr CLOSEBRACKET { Method ($3,$2,$1,$5,$8) }
 params:
 	| { [] }
-	| UIDENT LIDENT { [Param ($2,$1)] }
+	| UIDENT LIDENT { [Param($2,$1)] }
 	| UIDENT LIDENT COMMA params { (Param ($2,$1))::$4 }
 static:
 	| { false }
