@@ -3,7 +3,8 @@ let execute lexbuf verbose =
     let ast = Parser.start Lexer.token lexbuf in
     print_endline "successfull parsing";
     if verbose then AST.print_program ast;
-    print_endline "typing todo"
+    let typed_ast = Typer.type_program ast in
+    AST.print_program typed_ast
   with 
     | Parser.Error ->
       print_string "Syntax error: ";
