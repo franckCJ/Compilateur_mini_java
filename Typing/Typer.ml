@@ -4,7 +4,34 @@ open Type
 let compare_type t1 t2 =
 	String.compare (stringOf t1) (stringOf t2)
 
-let type_expression e = e
+let rec eval_type e =
+	match e.edesc with
+		|New type -> type
+		|Seq x y -> 
+		|Call x str lst ->
+		|If x y z -> let type_y = (eval_type y) in
+					 let bool = String.compare (eval_type x) "boolean" in
+					 let comp = String.compare type_y (eval_type z) in
+					 match (bool,comp) with
+					 	|(0,0) -> type_y
+					 	|_ -> print_endline "erreur de type"; ""
+		|Val x -> match x with
+					|Int i -> "int"
+					|String str -> "string"
+  					|Null -> "null"
+  					|Boolean bool -> "boolean"
+		|Var str ->
+		|Assign str x -> eval_type x
+		|Define str type x y -> type
+		|Cast type x -> type
+		|Instanceof x type -> type
+
+let type_expression e =
+	let exp = { 
+		e with
+		etype = eval_type e;
+	} in
+	exp
 
 let type_attribute a = 
 	match a.adefault with
@@ -14,7 +41,7 @@ let type_attribute a =
 						a with
 						adefault = Some typed_exp;
 					} in				
-				match typed_exp with
+				match typed_exp.etype with
 					|None -> print_endline "erreur de type"; a
 					|Some t -> let comp = compare_type t (Located.elem_of a.atype) in
 						match comp with

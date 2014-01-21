@@ -7,15 +7,15 @@ let keyword_table = Hashtbl.create 17
 let _ =
   List.iter (fun (k,d) -> Hashtbl.add keyword_table k d) 
    [
-     "class"	    , CLASS;
+     "class"	      , CLASS;
      "else"         , ELSE;
      "extends"	    , EXTENDS;
      "false"        , FALSE;
      "if"           , IF;
      "in"           , IN;
      "instanceof"   , INSTANCEOF;
-     "new"	    , NEW;
-     "null"	    , NULL;
+     "new"	        , NEW;
+     "null"	        , NULL;
      "this"         , THIS;
      "true"         , TRUE;
    ]
