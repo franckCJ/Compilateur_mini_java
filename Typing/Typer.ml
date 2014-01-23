@@ -5,9 +5,60 @@ let calc_bin_op = "sub"|"add"|"mul"|"div"|"mod"
 let comp_bin_op = "gt"|"ge"|"lt"|"le"|"eq"|"neq"
 let bool_bin_op = "and"|"or"
 
+let equals_string s1 s2 =
+	let comp = String.compare s1 s2 in
+	match comp with
+		| 0 -> true
+		| - -> false
+
 let compare_type t1 t2 =
 	String.compare (stringOf t1) (stringOf t2)
 
+(*********** Vérification des classes, méthodes et attributs **********
+ *********** et création des tables globales 								 **********) 
+let rec find_att att_table att_list =
+	match att_list with
+		| [] 		-> att_table
+		| h::t	-> 
+			let name_used = Hashtbl.mem att_table h.aname in
+			match name_used with
+				| true	-> print_endline "Erreur, deux attributs de même nom"
+				| false ->
+					Hashtbl.add att_table h.aname (Located.elem_of h.atype,h.aloc);
+					find_att att_table t
+
+let create_sig m =
+	let name_list,type_list = List.split m.margstype in
+	let args_types = List.map Located.elem_of type_list in
+	let return_type = Located.elem_of m.mreturntype in
+	create_func arg_type return_type
+
+let rec find_method meth_table meth_list =
+	match meth_list with
+		| [] 		-> meth_table
+		| h::t	->
+			let name_used = Hashtbl.mem meth_table h.mname in
+			match name_used with
+				| true	-> print_endline "Erreur, deux méthodes de même nom"
+				| false ->
+					Hashtbl.add meth_table h.mname (create_sig h,h.mloc);
+					find_method meth_table t
+
+let rec find_classes class_table cl =
+	match cl with
+		| [] 		-> class_table
+		| h::t	-> 
+			let name_used = Hashtbl.mem class_table h.cname in
+			match name_used with
+				| true	-> print_endline "Erreur, deux classes définies de même nom"
+				| false ->
+					let att_table = find_att (Hashtbl.create 0) h.cattributes in
+					let meth_table = find_method (Hashtbl.create 0) h.cmethods in
+					Hashtbl.add class_table h.cname (att_table,meth_table,h.cloc);
+					find_classes class_table t
+
+
+(*********** Détermination des correspondances des types     **********)
 let value_type v = function
 	| String of string 	-> fromString "String"
 	| Int of int 				-> fromString "Int"
@@ -32,7 +83,7 @@ let call_type op first_type type_list =
 			match first_comp second_comp with
 				| (0,0) -> fromString "Boolean"
 				| _ 		-> print_endline "erreur de type"; fromString ""
-		| _			-> (*Rechercher la méthode op dans la classe m=first_type*) fromString ""
+		| _						-> (*Rechercher la méthode op dans la classe m=first_type*) fromString ""
 
 let eval_type e = 
 	match edesc with
@@ -85,14 +136,10 @@ let type_attribute a =
 						| 0 -> at
 						|	_ -> print_endline "erreur de type"; a
 
-let verify_arg att_list arg =
-	arg
-
 let type_method att_list m =
-	let method_args = List.map verify_arg att_list m.margstype in
-	(*faire la liste des arguments de la méthode, vérifier qu'ils ne
-	portent pas le meme nom qu'un attribut de la classe*)
-	let typed_body = type_expression m.mbody in
+	let arg_table = Hashtbl.create (List.length m.margstype);
+	List.iter (fun(name,arg_type) -> Hashtbl.add arg_table name (elem_of arg_type)) method_args;
+	let typed_body = type_expression class_table arg_table [] m.mbody in
 	let me = { 
 		m with
 			mbody = typed_body;
@@ -106,6 +153,7 @@ let type_method att_list m =
 				| _ -> print_endline "erreur de type"; m
 
 let type_class c =
+	(*let class_table = find_classes*)
 	let typed_attr = (List.map type_attribute c.cattributes) in
 	let typed_meth = (List.map type_method typed_attr c.cmethods) in
 	let cl = { 
