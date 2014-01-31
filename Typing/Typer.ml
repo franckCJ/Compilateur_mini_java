@@ -14,6 +14,20 @@ let equals_string s1 s2 =
 let compare_type t1 t2 =
 	String.compare (stringOf t1) (stringOf t2)
 
+let find_type class_table class_name args_table local_table var_name =
+	try
+		Hashtbl.find local_table var_name
+	with Not_Found ->
+		try
+			Hashtbl.find args_table var_name
+		with Not_Found ->
+			try
+				let (att_table,meth_table) = Hashtbl.find class_table class_name in
+				Hashtbl.find att_table var_name
+			with Not_Found ->
+				print_endline "Error, Attribute not found"; fromString ""
+
+
 (*********** Vérification des classes, méthodes et attributs **********
  *********** et création des tables globales 								 **********) 
 let rec find_att att_table att_list =
@@ -85,41 +99,59 @@ let call_type op first_type type_list =
 				| _ 		-> print_endline "erreur de type"; fromString ""
 		| _						-> (*Rechercher la méthode op dans la classe m=first_type*) fromString ""
 
-let eval_type e = 
-	match edesc with
-		| New nval 								-> Some (elem_of nval)
-		| Seq x y 								->
-			type_expression x;
-			type_expression y;
-			Some ""
-		| Call x str lst 					->
-			let type_x = type_expression x in
-			let type_list = List.map type_expression lst in
-			Some (call_type str type_x type_list)
-		| If x y z 								->
-			let cond 		= String.compare (type_expression x).etype "Boolean" in
-			let type_y 	= (type_expression y).etype in
-			let type_z 	= (type_expression z).etype in
-			let comp		= String.compare type_y type_z in
-				match (cond,comp) with
-					| (0,0) -> Some type_y
-					| (0,_) -> print_endline "erreur de type"; Some ""
-					| (_,0)	-> print_endline "erreur de type"; Some ""
-		| Val v 									-> Some (value_type v)
-		|	Var str 								-> (*Retrouver le type de la variable dans la table*) Some ""
-		| Assign str x 						-> (*Retrouver le type de la var où on assigne*) type_expression x; Some "" (*A changer*)
-		| Define str val_type x y	-> (*Ajouter une variable locale dans la table avec le type adéquat*) Some (elem_of val_type)
-		| Cast new_type x 				-> type_expression x; Some (elem_of new_type)
-		| Instanceof x t 					-> type_expression x; Some (fromString "Boolean")
-
-let type_expression e =
+let rec type_expression class_table class_name args_table local_table e =
+	(*faire la curification de la fonction*)
 	let exp = { 
 		e with
-		etype = eval_type e;
+		etype =
+			match e.edesc with
+				| New nval 								-> Some (elem_of nval)
+				| Seq x y 								->
+					type_expression x;
+					type_expression y;
+					Some ""
+				| Call x str lst 					->
+					let type_x = type_expression x in
+					let type_list = List.map type_expression lst in
+					Some (call_type str type_x type_list)
+				| If x y  								->
+					let cond 		= String.compare (type_expression x).etype "Boolean" in
+					let type_y 	= (type_expression y).etype in
+					let type_z 	= (type_expression z).etype in
+					let comp		= String.compare type_y type_z in
+						match (cond,comp) with
+							| (0,0) -> Some type_y
+							| (0,_) -> print_endline "erreur de type"; Some ""
+							| (_,0)	-> print_endline "erreur de type"; Some ""
+				| Val v 									-> Some (value_type v)
+				|	Var str 								-> Some (find_type class_table class_name args_table local_table str)
+				| Assign str x 						->
+					let var_type = find_type class_table class_name args_table local_table str in
+					let typed_exp = type_expression x in
+					match (var_type,x.etype) with
+						| Some t1, Some t2 ->
+							match (compare_type t1 t2) with
+								| 0 -> Some t1
+								| _ -> print_endline "Erreur de type"; Some ""
+						| _ -> print_endline "Erreur de type"; Some "" (*Possibilité de différencier les cas*)
+				| Define str val_type x y	->
+					let typed_x = type_expression class_table class_name args_table local_table x in
+					match typed_x.etype with
+						| None -> print_endline "Erreur de type"
+						| Some t -> 
+							match (compare_type t (elem_of val_type)) with
+							| 0 ->
+								Hashtbl.add local_table str val_type;
+								type_expression class_table class_name args_table local_table y;
+								Hashtbl.remove local_table str;
+								Some (elem_of val_type)
+							| _ -> print_endline "Erreur de type"
+				| Cast new_type x 				-> type_expression x; Some (elem_of new_type)
+				| Instanceof x t 					-> type_expression x; Some (fromString "Boolean")
 	} in
 	exp
 
-let type_attribute a = 
+let type_attribute class_table class_name a = 
 	match a.adefault with
 		|	None 		-> a
 		|	Some e 	->
@@ -136,10 +168,10 @@ let type_attribute a =
 						| 0 -> at
 						|	_ -> print_endline "erreur de type"; a
 
-let type_method att_list m =
+let type_method class_table class_name m =
 	let arg_table = Hashtbl.create (List.length m.margstype);
 	List.iter (fun(name,arg_type) -> Hashtbl.add arg_table name (elem_of arg_type)) method_args;
-	let typed_body = type_expression class_table arg_table [] m.mbody in
+	let typed_body = type_expression class_table class_name arg_table (Hashtbl.create 0) m.mbody in
 	let me = { 
 		m with
 			mbody = typed_body;
@@ -152,10 +184,9 @@ let type_method att_list m =
 				| 0 -> me 
 				| _ -> print_endline "erreur de type"; m
 
-let type_class c =
-	(*let class_table = find_classes*)
-	let typed_attr = (List.map type_attribute c.cattributes) in
-	let typed_meth = (List.map type_method typed_attr c.cmethods) in
+let type_class class_table c =
+	let typed_attr = (List.map type_attribute class_table c.cname c.cattributes) in
+	let typed_meth = (List.map type_method class_table c.cname c.cmethods) in
 	let cl = { 
 		c with
 			cattributes = typed_attr;
@@ -164,7 +195,8 @@ let type_class c =
 	cl
 
 let type_program (cl,e_op) = 
-	let typed_cl = List.map type_class cl in
+	let class_table = find_classes (Hashtbl.create 0) in
+	let typed_cl = List.map type_class class_table cl in
 	match e_op with
 		| None 		-> typed_cl,None
 		| Some e 	-> typed_cl,(Some (type_expression e))
