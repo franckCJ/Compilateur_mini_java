@@ -9,10 +9,13 @@ let equals_string s1 s2 =
 	let comp = String.compare s1 s2 in
 	match comp with
 		| 0 -> true
-		| - -> false
+		| _ -> false
 
 let compare_type t1 t2 =
 	String.compare (stringOf t1) (stringOf t2)
+
+let compare_sig s1 s2 =
+	String.compare (string_of_func s1) (string_of_func s2)
 
 let find_type class_table class_name args_table local_table var_name =
 	try
@@ -30,6 +33,35 @@ let find_type class_table class_name args_table local_table var_name =
 
 (*********** Vérification des classes, méthodes et attributs **********
  *********** et création des tables globales 								 **********) 
+let protected_classes = "Object" | "Int" | "String" | "Boolean"
+
+let rec filter_meth_by_sig meth_list meth_table = function
+	| []		-> meth_list
+	| (name,sign)::t as curr_list ->
+		try
+			let (local_sign,loc) = Hashtbl.find meth_table name in
+			let comp = compare_sig sign local_sign in
+			match comp with
+				| 0	-> verify_meth_sig meth_list meth_table t
+				| _ -> print_endline "Erreur, signatures non compatibles"
+		with Not_Found ->
+			verify_meth_sig (name,sign)::meth_list meth_table t
+			
+let rec check_extends_cycle class_table meth_list class_list key (parent,atts,meths,loc) =
+	match key with
+		| protected_classes		-> ()
+		| str 								->
+			match (List.mem str class_list) with
+				| true 	-> print_endline "Erreur, bouclage d'heritage"
+				| false ->
+					let parent_name = elem_of parent in
+					try
+						let pparent,patts,pmeths,ploc = Hashtbl.find class_table parent_name in
+						let remaining_meths = filter_meth_by_sig [] pmeths meth_list in
+						check_extends_cycle class_table remaining_meths str::class_list parent_name (pparent,patts,pmeths,ploc)
+					with Not_Found ->
+						print_endline "Erreur, le parent n'existe pas"
+
 let rec find_att att_table att_list =
 	match att_list with
 		| [] 		-> att_table
@@ -58,18 +90,23 @@ let rec find_method meth_table meth_list =
 					Hashtbl.add meth_table h.mname (create_sig h,h.mloc);
 					find_method meth_table t
 
+(* Vérifie si le nom de la classe ne correspond pas à Int, String, Boolean, Null,
+	Object => classes protégées *)
 let rec find_classes class_table cl =
 	match cl with
 		| [] 		-> class_table
 		| h::t	-> 
-			let name_used = Hashtbl.mem class_table h.cname in
+			let name_used = Hashtbl.mem class_table h.cname in (*créer un type used_classes pour les classes déjà vues*)
 			match name_used with
 				| true	-> print_endline "Erreur, deux classes définies de même nom"
 				| false ->
-					let att_table = find_att (Hashtbl.create 0) h.cattributes in
-					let meth_table = find_method (Hashtbl.create 0) h.cmethods in
-					Hashtbl.add class_table h.cname (att_table,meth_table,h.cloc);
-					find_classes class_table t
+					match h.cname with
+						| protected_classes	-> print_endline "Erreur, nom de classe protégé"
+						| _									->
+							let att_table = find_att (Hashtbl.create 0) h.cattributes in
+							let meth_table = find_method (Hashtbl.create 0) h.cmethods in
+							Hashtbl.add class_table h.cname (h.cparent,h.att_table,meth_table,h.cloc);
+							find_classes class_table t
 
 
 (*********** Détermination des correspondances des types     **********)
@@ -124,7 +161,10 @@ let rec type_expression class_table class_name args_table local_table e =
 							| (0,_) -> print_endline "erreur de type"; Some ""
 							| (_,0)	-> print_endline "erreur de type"; Some ""
 				| Val v 									-> Some (value_type v)
-				|	Var str 								-> Some (find_type class_table class_name args_table local_table str)
+				|	Var str 								-> 
+					match str with
+						| "this"	->
+						| _				-> Some (find_type class_table class_name args_table local_table str)
 				| Assign str x 						->
 					let var_type = find_type class_table class_name args_table local_table str in
 					let typed_exp = type_expression x in
@@ -194,8 +234,11 @@ let type_class class_table c =
 	} in
 	cl
 
+(* Vérifier le cyclage des extends *)
+(* Ajouter la classe mère dans la table des classes *)
 let type_program (cl,e_op) = 
-	let class_table = find_classes (Hashtbl.create 0) in
+	let class_table = find_classes (Hashtbl.create 0);
+	Hashtbl.iter (check_extends_cycle class_table []) class_table;
 	let typed_cl = List.map type_class class_table cl in
 	match e_op with
 		| None 		-> typed_cl,None
