@@ -6,3 +6,5 @@ ocamlbuild Main.byte (or native) to build the compiler.
 
 ocamlbuild Main.byte -- filename (or native) to build and then execute
 the compiler on the file given.
+
+Cast non sur, charge au programmeur de vérifier si le transtypage est bon.
