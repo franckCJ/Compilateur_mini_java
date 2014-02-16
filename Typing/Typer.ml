@@ -225,34 +225,34 @@ let rec type_expression class_table class_name args_table local_table e =
 				|	Var str 								-> 
 					(match str with
 						| "this"	-> Some (fromString class_name)
-						| _				-> Some (fromString (find_type class_table class_name args_table local_table str))
+						| _	as s	-> Some (find_type class_table (fromString class_name) args_table local_table s)
 					)
 				| Assign (str,x)					-> 
-					let var_type = find_type class_table class_name args_table local_table str in
+					let var_type = find_type class_table (fromString class_name) args_table local_table str in
 					let typed_exp = curry_type_expression x in
-					(match (var_type,x.etype) with
-						| Some t1, Some t2 ->
-							(match (is_parent t1 t2) with
+					(match (var_type,typed_exp.etype) with
+						| t1, Some t2 ->
+							(match (is_parent class_table t1 t2) with
 								| true 	-> Some t1
-								| _ 		-> print_endline "Erreur de type"; Some ""
+								| _ 		-> print_endline "Erreur de type"; Some (fromString "")
 							)
-						| _ -> print_endline "Erreur de type"; Some "" (*Possibilité de différencier les cas*)
+						| _ -> print_endline "Erreur de type"; Some (fromString "") (*Possibilité de différencier les cas*)
 					)
 				| Define (str,val_type,x,y)	->
-					(match exists_type class_table val_type with
-						| false	-> print_endline "Le type utilisé n'est pas défini"
+					(match exists_type class_table (Located.elem_of val_type) with
+						| false	-> print_endline "Le type utilisé n'est pas défini"; Some (fromString "")
 						| true	->
 							let typed_x = curry_type_expression x in
 							(match typed_x.etype with
-								| None -> print_endline "Erreur de type"
+								| None -> print_endline "Erreur de type"; Some (fromString "")
 								| Some t -> 
-									(match (is_parent (Located.elem_of val_type) t) with
+									(match (is_parent class_table (Located.elem_of val_type) t) with
 										| true	->
-											Hashtbl.add local_table str val_type;
+											Hashtbl.add local_table str (Located.elem_of val_type);
 											type_expression class_table class_name args_table local_table y;
 											Hashtbl.remove local_table str;
 											Some (Located.elem_of val_type)
-										| _ 		-> print_endline "Erreur de type"
+										| _ 		-> print_endline "Erreur de type"; Some (fromString "")
 									)
 							)
 					)
@@ -307,7 +307,7 @@ let type_class class_table c =
 	cl
 
 let type_program (cl,e_op) = 
-	let class_table = find_classes (Hashtbl.create 0) in
+	let class_table = find_classes (Hashtbl.create 0) cl in
 	Hashtbl.iter (check_extends_cycle class_table []) class_table;
 	let typed_cl = List.map type_class class_table cl in
 	match e_op with
