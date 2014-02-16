@@ -6,8 +6,7 @@ exception Error of t * Location.t
 val report_error : t -> unit
 
 (* raise the various errors *)
-val illegal_char : char -> Location.t -> 'a
-val illegal_escape_char : Location.t -> 'a
-val unterminated_string : Location.t -> 'a
-val unterminated_comment : Location.t -> 'a
-val syntax : Location.t -> 'a
+val illegal_class_name : string -> Location.t -> 'a
+val used_class_name : string -> Location.t -> 'a
+val used_meth_name : string -> Location.t -> 'a
+val used_att_name : string -> Location.t -> 'a

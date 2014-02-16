@@ -15,3 +15,9 @@ let rec string_of_list = function
 
 let string_of_func (args,res) =
   "("^(string_of_list args)^") -> "^res
+
+let get_args_list (args,res) =
+	args
+
+let get_return_type (args,res) =
+	res

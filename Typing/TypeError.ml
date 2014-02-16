@@ -1,38 +1,34 @@
 type t =
-  | Illegal_character of char
-  | Illegal_escape_char
-  | Unterminated_string
-  | Unterminated_comment
-  | Syntax
+  | Illegal_class_name of string
+  | Used_class_name of string
+  | Used_meth_name of string
+  | Used_att_name of string
 
 exception Error of t * Location.t;;
 
 (* Les erreurs. *)
 let report_error = function
-  | Illegal_character c ->
-      print_string "Illegal character (";
-      print_char c;
-      print_string "): "
-  | Illegal_escape_char ->
-      print_endline "Illegal escape character in string: "
-  | Unterminated_string ->
-      print_endline "String literal not terminated: "
-  | Unterminated_comment ->
-      print_endline "Comment not terminated: "
-  | Syntax ->
-      print_endline "Syntax error: "
+  | Illegal_class_name s ->
+      print_string "Illegal class name : ";
+      print_endline s
+  | Used_class_name s ->
+      print_string "Second use of the same class name : ";
+			print_endline s
+  | Used_meth_name s ->
+      print_string "Second use of the same method name : ";
+			print_endline s
+  | Used_att_name s ->
+      print_string "Second use of the same attribute name : ";
+			print_endline s
 
-let illegal_char char loc =
-  raise (Error(Illegal_character char, loc))
+let illegal_class_name str loc =
+  raise (Error(Illegal_class_name str, loc))
 
-let illegal_escape_char loc =
-  raise (Error(Illegal_escape_char, loc))
+let used_class_name str loc =
+  raise (Error(Used_class_name str, loc))
 
-let unterminated_string loc =
-  raise (Error (Unterminated_string, loc))
+let used_meth_name str loc =
+  raise (Error (Used_meth_name str, loc))
 
-let unterminated_comment loc =
-  raise (Error (Unterminated_comment, loc))
-
-let syntax loc =
-  raise (Error (Syntax, loc))
+let used_att_name str loc =
+  raise (Error (Used_att_name str, loc))
