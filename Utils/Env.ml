@@ -12,3 +12,8 @@ let define env n t =
     result
 
 let iter f = Hashtbl.iter (fun s i -> f (s,i))
+
+let get_keys env =
+	let result = [] in
+	Hashtbl.iter(fun (k,v) -> k::result) env;
+	result

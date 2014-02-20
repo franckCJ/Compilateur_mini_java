@@ -1,11 +1,8 @@
 open AST
 open Type
-open TypeError
+open TypeError;;
 
-let protected_classes = Str.regexp "Object \\| Int \\| String \\| Boolean"
-let calc_bin_op = Str.regexp "sub \\| add \\| mul \\| div \\| mod"
-let comp_bin_op = Str.regexp "gt \\| ge \\| lt \\| le \\| eq \\| neq"
-let bool_bin_op = Str.regexp "and \\| or"
+let protected_classes = [fromString "Object" ; fromString "Int" ; fromString "String" ; fromString "Boolean"]
 
 let class_table = Hashtbl.create 0
 
@@ -25,18 +22,20 @@ let get_type = function
 	| None		-> print_endline "Problème de typage"; fromString ""
 	| Some t	-> t
 
-let exists_type = function
-	| protected_classes -> true
-	| _ as str 					-> Hashtbl.mem class_table (fromString str)
-
+let exists_type str = 
+	match List.mem (fromString str) protected_classes with
+	| true -> true
+	| _ 	 -> Hashtbl.mem class_table (fromString str)
 
 let rec is_parent t1 t2 =
 	try
 		let parent,atts,meths,loc = Hashtbl.find class_table t2 in
+		match List.mem (Located.elem_of parent) protected_classes with 
+			|true -> false
+			| _ 	->
 		match Located.elem_of parent with
-			| t1 								-> true
-			| protected_classes -> false
-			| _ as p 						-> is_parent t1 p
+			| t1 	-> true
+			| _ as p 	-> is_parent t1 p
 	with Not_found ->
 		print_endline	("Error, le type " ^ (stringOf t2) ^ " est inconnu"); false
 
@@ -83,12 +82,12 @@ let rec find_meth_type meth_name type_list class_name =
 			try
 				let sign,loc = Hashtbl.find meths meth_name in
 				let args = get_args_list sign in
-				let res = get_result_type sign in
+				let res = get_return_type sign in
 				check_args_type args type_list;
 				res
 			with Not_found ->
-				match parent with
-					| protected_classes -> print_endline "La méthode n'est pas défini dans la classe"; fromString ""
+				match List.mem (Located.elem_of parent) protected_classes with
+					| true -> print_endline "La méthode n'est pas défini dans la classe"; fromString ""
 					| _ 								-> find_meth_type meth_name type_list (Located.elem_of parent)
 		with Not_found ->
 			print_endline "Le type de la classe appelée n'existe pas"; fromString ""
@@ -108,19 +107,21 @@ let rec filter_meth_by_sig meth_list meth_table = function
 			filter_meth_by_sig ((name,sign)::meth_list) meth_table t
 			
 let rec check_extends_cycle meth_list class_list key (parent,atts,meths,loc) =
-	match key with
-		| protected_classes		-> ()
-		| str 								->
-			match (List.mem str class_list) with
+	match List.mem key protected_classes with
+		| true -> ()
+		| _ 	 ->
+			begin
+			match List.mem key class_list with
 				| true 	-> print_endline "Erreur, bouclage d'heritage"
 				| false ->
 					let parent_name = Located.elem_of parent in
 					try
 						let pparent,patts,pmeths,ploc = Hashtbl.find class_table parent_name in
 						let remaining_meths = filter_meth_by_sig [] pmeths meth_list in
-						check_extends_cycle remaining_meths (str::class_list) parent_name (pparent,patts,pmeths,ploc)
+						check_extends_cycle remaining_meths (key::class_list) parent_name (pparent,patts,pmeths,ploc)
 					with Not_found ->
 						print_endline "Erreur, le parent n'existe pas"
+			end
 
 let rec find_att att_table att_list =
 	match att_list with
@@ -139,8 +140,7 @@ let create_sig m =
 	let return_type = Located.elem_of m.mreturntype in
 	create_func (args_type,return_type)
 
-let rec find_method meth_table meth_list =
-	match meth_list with
+let rec find_method meth_table = function
 		| [] 		-> meth_table
 		| h::t	->
 			let name_used = Hashtbl.mem meth_table h.mname in
@@ -152,21 +152,22 @@ let rec find_method meth_table meth_list =
 
 (* Vérifie si le nom de la classe ne correspond pas à Int, String, Boolean, Null,
 	Object => classes protégées *)
-let rec find_classes cl =
-	match cl with
+let rec find_classes = function
 		| [] 		-> ()
 		| h::t	-> 
 			let name_used = Hashtbl.mem class_table (fromString h.cname) in
 			match name_used with
 				| true	-> print_endline "Erreur, deux classes définies de même nom"
 				| false ->
-					match h.cname with
-						| protected_classes	-> print_endline "Erreur, nom de classe protégé"
-						| _									->
+					begin
+					match List.mem (fromString h.cname) protected_classes with
+						| true	-> print_endline "Erreur, nom de classe protégé"
+						| _			->
 							let att_table = find_att (Hashtbl.create 0) h.cattributes in
 							let meth_table = find_method (Hashtbl.create 0) h.cmethods in
 							Hashtbl.add class_table (fromString h.cname) (h.cparent,att_table,meth_table,h.cloc);
 							find_classes t
+					end
 
 
 (*********** Détermination des correspondances des types     **********)
@@ -182,17 +183,17 @@ let call_type op first_typed typed_list =
 	match op with
 		| "not" 			-> first_type
 		| "neg" 			-> first_type
-		| calc_bin_op	->
+		| "sub" | "add" | "mul" | "div" | "mod"	->
 			(match (compare_type first_type (List.hd type_list)) with
 				| 0 -> first_type
 				| _ -> print_endline "erreur de type"; fromString ""
 			)
-		| comp_bin_op	->
+		| "gt" | "ge" | "lt" | "le" | "eq" | "neq"	->
 			(match (compare_type first_type (List.hd type_list)) with
 				| 0 -> fromString "Boolean"
 				| _ -> print_endline "erreur de type"; fromString ""
 			)
-		| bool_bin_op	->
+		| "and" | "or"	->
 			let first_comp = compare_type first_type (fromString "Boolean") in
 			let second_comp = compare_type (List.hd type_list) (fromString "Boolean") in
 			(match (first_comp,second_comp) with
@@ -311,10 +312,15 @@ let type_class c =
 	} in
 	cl
 
+let get_keys htbl =
+	let result = [] in
+	Hashtbl.iter (fun k v -> k::result;()) htbl;
+	result
+
 let type_program (cl,e_op) = 
 	find_classes cl;
-	Hashtbl.iter (fun(key,(parent,atts,meths,loc) -> (check_extends_cycle meths[]) class_table;
+	Hashtbl.iter (fun key (parent,atts,meths,loc) -> (check_extends_cycle (get_keys meths) [] key (parent,atts,meths,loc))) class_table;
 	let typed_cl = List.map type_class cl in
 	match e_op with
 		| None 		-> typed_cl,None
-		| Some e 	-> typed_cl,(Some (type_expression e))
+		| Some e 	-> typed_cl,(Some (type_expression (fromString "") (Hashtbl.create 0) (Hashtbl.create 0) e))
