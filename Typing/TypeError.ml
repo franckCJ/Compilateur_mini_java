@@ -1,8 +1,8 @@
 type t =
   | Illegal_class_name of Type.t
   | Used_class_name of Type.t
-  | Used_meth_name of Type.t
-  | Used_att_name of Type.t
+  | Used_meth_name of string
+  | Used_att_name of string
 	| Inheritance_loop of Type.t
   | Non_existing_class of Type.t
   | Non_existing_method of Type.t * string
@@ -10,7 +10,7 @@ type t =
   | Args_Error of string * int
   | Return_Error of string * Type.t * Type.t
   | Sig_Error of string * Location.t
-  | Incorrect_type of Type.t * Location.t * Type.t * Location.t
+  | Incorrect_type of Type.t * Type.t * Location.t
   | Incorrect_var_type of string * Type.t * Type.t
   | Non_typed_exp 
 
@@ -24,12 +24,12 @@ let report_error = function
   | Used_class_name t ->
       print_string "Second use of the same class name : ";
 			print_endline (Type.stringOf t)
-  | Used_meth_name t ->
+  | Used_meth_name s ->
       print_string "Second use of the same method name : ";
-			print_endline (Type.stringOf t)
-  | Used_att_name t ->
+			print_endline s
+  | Used_att_name s ->
       print_string "Second use of the same attribute name : ";
-			print_endline (Type.stringOf t)
+			print_endline s
   | Inheritance_loop t ->
       print_string "A loop in the extends is done at the level of the class : ";
 			print_endline (Type.stringOf t)
@@ -64,14 +64,10 @@ let report_error = function
 		print_string m;
 		print_string " has not the same signature as define in a parent class here : ";
 		Location.print loc
-	| Incorrect_type (type1,loc1,type2,loc2) ->
-		print_string "The type " ^ (Type.stringOf type1);
-		print_string " of the expression located ";
-		Location.print loc1;
-		print_string "and the type " ^ (Type.stringOf type2);
-		print_string " of the expression located ";
-		Location.print loc2;
-		print_endline "mismatch"
+	| Incorrect_type (type1,type2) ->
+		print_string "The expression has type " ^ (Type.stringOf type1);
+		print_string "but an expression of type " ^ (Type.stringOf type2);
+		print_endline "was excepted"
 	| Incorrect_var_type (var,var_type,exp_type) ->
 		print_string "The expression has a type "
 		print_string (Type.stringOf exp_type)
@@ -83,43 +79,43 @@ let report_error = function
 		print_endline "The expression has no type";
 
 let illegal_class_name str loc =
-  raise (Error(Illegal_class_name str), loc)
+  raise (Error (Illegal_class_name str),loc)
 
 let used_class_name str loc =
-  raise (Error(Used_class_name str), loc)
+  raise (Error (Used_class_name str),loc)
 
 let used_meth_name str loc =
-  raise (Error (Used_meth_name str), loc)
+  raise (Error (Used_meth_name str),loc)
 
 let used_att_name str loc =
-  raise (Error (Used_att_name str), loc)
+  raise (Error (Used_att_name str),loc)
 
 let inheritance_loop str loc =
-  raise (Error (Inheritance_loop str), loc)
+  raise (Error (Inheritance_loop str),loc)
 
 let non_existing_class str loc =
-  raise (Error (Non_existing_class str), loc)
+  raise (Error (Non_existing_class str),loc)
 
 let non_existing_method str str loc =
-  raise (Error (Non_existing_class str str), loc)
+  raise (Error (Non_existing_method str str),loc)
 
 let non_existing_attribute str str loc =
-  raise (Error (Non_existing_class str str), loc)
+  raise (Error (Non_existing_attribute str str),loc)
 
 let args_error str id loc =
-  raise (Error (Non_existing_class str id), loc)
+  raise (Error (Args_Error str id),loc)
 
 let return_type_error str return_type exp_type loc =
-  raise (Error (Non_existing_class str return_type exp_type), loc)
+  raise (Error (Return_Error str return_type exp_type),loc)
 
 let sig_error str loc_parent loc =
-  raise (Error (Non_existing_class str loc_parent, loc))
+  raise (Error (Sig_Error str loc_parent),loc))
 
-let incorrect_type type1 loc1 type2 loc2 =
-	raise (Error (Incorrect_type type1 loc1 type2 loc2), loc)
+let incorrect_type type1 type2 loc =
+	raise (Error (Incorrect_type type1 type2),loc)
 
 let incorrect_var_type var var_type exp_type loc =
-	raise (Error (Incorrect_var_type var var_type exp_type), loc)
+	raise (Error (Incorrect_var_type var var_type exp_type),loc)
 
 let non_typed_exp loc =
-  raise (Error (Non_typed_exp, loc))
+  raise (Error Non_typed_exp,loc))
