@@ -13,7 +13,9 @@ let equals_string s1 s2 =
 		| _ -> false
 
 let compare_type t1 t2 =
-	String.compare (stringOf t1) (stringOf t2)
+	match String.compare (stringOf t1) (stringOf t2) with
+		| 0 -> true
+		| _ -> false 
 
 let compare_sig s1 s2 =
 	String.compare (string_of_func s1) (string_of_func s2)
@@ -28,35 +30,40 @@ let exists_type value_type =
 		| _ 	 -> Hashtbl.mem class_table value_type
 
 let rec is_parent t1 t2 =
+	let type_t2 = Located.elem_of t2 in
 	try
-		let parent,atts,meths,loc = Hashtbl.find class_table t2 in
-		match List.mem (Located.elem_of parent) protected_classes with 
-			|true -> false
+		let parent,atts,meths,loc = Hashtbl.find class_table type_t2 in
+		let type_parent = Located.elem_of parent in
+		match List.mem type_parent protected_classes with 
+			|	true -> false
 			| _ 	->
+				let type_t1 = Located.elem_of t1 in
 				begin
-				match Located.elem_of parent with
-					| t1 	-> true
-					| _ as p 	-> is_parent t1 p
+				match type_parent with
+					| type_t1	-> true
+					| _  			-> is_parent t1 parent
 				end
 	with Not_found ->
-		non_existing_class t2 (Located.loc_of t2)
+		non_existing_class (Located.elem_of t2) (Located.loc_of t2)
 
 let rec common_parent t1 t2 =
+	let type_t1 = Located.elem_of t1 in
 	match is_parent t1 t2 with
-		| true 	-> t1
+		| true 	-> type_t1
 		| false	->
 			try
-				let parent,atts,meths,loc = Hashtbl.find class_table t1 in
-				common_parent (Located.elem_of parent) t2
+				let parent,atts,meths,loc = Hashtbl.find class_table type_t1 in
+				common_parent parent t2
 			with Not_found ->
-				non_existing_class t1 (Located.loc_of t1)
+				non_existing_class type_t1 (Located.loc_of t1)
 
 let has_common_parent t1 t2 =
-	match stringOf t1 with
-		| "Int" | "String" | "Boolean" -> compare_type t1 t2, t1
-		| _ -> true,common_parent t1 t2
+	let type_t1 = Located.elem_of t1 in
+	match stringOf type_t1 with
+		| "Int" | "String" | "Boolean" -> (compare_type type_t1 (Located.elem_of t2)), type_t1
+		| _ -> true,(common_parent t1 t2)
 		
-let find_type class_name args_table local_table var_name =
+let find_type class_name args_table local_table var_loc var_name =
 	try
 		Hashtbl.find local_table var_name
 	with Not_found ->
@@ -69,20 +76,28 @@ let find_type class_name args_table local_table var_name =
 				att_type
 			with Not_found ->
 				(*Voir si pas prendre loc en entrée de la fonction pour avoir une erreur plus précise*)
-				non_existing_attribute class_name att_table loc
+				non_existing_attribute class_name var_name var_loc
 
 let rec check_args_type meth_name loc args = function
 	| [] ->
+		begin
 		match args with
 			| [] 	-> ()
 			| _		-> args_error meth_name -1 loc
+		end
 	| h::t ->
+		begin
 		match args with
 			| []			-> args_error meth_name 1 h.eloc
 			| ah::at	->
-				match is_parent ah (get_type (h.etype)) with
+				let ref_arg = Located.mk_elem ah h.eloc in
+				let used_arg = Located.mk_elem (get_type h.etype) h.eloc in
+				begin
+				match is_parent ref_arg used_arg with
 					| true	-> check_args_type meth_name h.eloc at t
 					| false	-> args_error meth_name 0 h.eloc
+				end
+		end
 
 let rec find_meth_type meth_name type_list class_called = 
 	let class_name = Located.elem_of class_called in
@@ -253,7 +268,7 @@ let rec type_expression class_name args_table local_table e =
 					let cond 		= compare_type type_x (fromString "Boolean") in
 					let type_y 	= get_type (curry_type_expression y).etype in 
 					let type_z 	= get_type (curry_type_expression z).etype in
-					let result	= has_common_parent type_y type_z in
+					let result	= has_common_parent (Located.mk_elem type_y y.eloc) (Located.mk_elem type_z z.eloc) in
 						begin
 						match cond,result with
 							| (0,(true,_ as t))	-> Some t 
@@ -265,10 +280,10 @@ let rec type_expression class_name args_table local_table e =
 					begin
 					match str with
 						| "this"	-> Some class_name
-						| _	as s	-> Some (find_type class_name args_table local_table s)
+						| _	as s	-> Some (find_type class_name args_table local_table e.eloc s)
 					end
 				| Assign (str,x) -> 
-					let var_type = find_type class_name args_table local_table str in
+					let var_type = find_type class_name args_table local_table e.eloc str in
 					let typed_exp = curry_type_expression x in
 					begin
 					match (var_type,typed_exp.etype) with
