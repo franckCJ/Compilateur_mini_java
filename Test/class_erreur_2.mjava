@@ -1,9 +1,0 @@
-klass ErreurClasse
-// wrong key word
-{
-	Baz qux;
-
-	Foo bar(Uident lident) {
-		foobar	
-	}
-}

@@ -1,6 +1,0 @@
-class ErreurClasse
-{
-	Foo bar(lident) {
-		// missing type in param
-	}
-}

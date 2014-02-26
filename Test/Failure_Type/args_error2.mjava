@@ -1,0 +1,9 @@
+class A {
+	Int foo(){
+
+	}
+}
+
+class B {
+	Int bar = A.foo(1)
+}

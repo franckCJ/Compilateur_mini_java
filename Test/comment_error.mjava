@@ -1,7 +1,0 @@
-class Main
-{
-	Integer value = 10934;
-	/* multiline comment
-	which goes to the end
-
-}
