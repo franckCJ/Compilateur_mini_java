@@ -21,7 +21,8 @@ let compile str =
     let input_file = open_in file in
     let lexbuf = Lexing.from_channel input_file in
     Location.init lexbuf file;
-    print_endline "opening file";
+    print_string "opening file : ";
+    print_endline filename;
     Compile.execute lexbuf !verbose;
     close_in (input_file)
   with Sys_error s ->

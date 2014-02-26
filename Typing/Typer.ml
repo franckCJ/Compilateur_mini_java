@@ -2,6 +2,9 @@ open AST
 open Type
 open TypeError;;
 
+(* supprimer l'héritage de int, string et boolean *)
+(* Vérifier qu'un attribut d'une classes n'est pas l'attribut d'une classe mère *)
+
 let protected_classes = [fromString "Object" ; fromString "Int" ; fromString "String" ; fromString "Boolean"]
 
 let class_table = Hashtbl.create 0

@@ -1,4 +1,4 @@
-The minijavac compiler.
+The minijava compiler.
 
 A compilation project for Third year students of Telecom Bretagne.
 
@@ -7,4 +7,15 @@ ocamlbuild Main.byte (or native) to build the compiler.
 ocamlbuild Main.byte -- filename (or native) to build and then execute
 the compiler on the file given.
 
+Project :
+----------
+Parsing
+----------
+- The Parser doesn't take in account big_numbers. If a number is too big, the
+	parser raise the error "Failure("int_of_string")", and the compilation crashes
+	for all files. -> Personal error to rise.
+
+----------
+Typing
+----------
 Cast non sur, charge au programmeur de vérifier si le transtypage est bon.
