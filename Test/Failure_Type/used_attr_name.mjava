@@ -1,0 +1,7 @@
+class A {
+	Int a = 1
+}
+
+class B extends A {
+	Int a = 2
+}

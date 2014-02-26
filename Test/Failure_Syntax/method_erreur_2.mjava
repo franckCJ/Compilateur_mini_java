@@ -1,0 +1,6 @@
+class ErreurClasse
+{
+	Foo Bar(Uident lident) {
+		// method name should be lowercase	
+	}
+}

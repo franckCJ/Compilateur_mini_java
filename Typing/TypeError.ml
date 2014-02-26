@@ -1,9 +1,10 @@
 type t =
   | Illegal_class_name of Type.t
+  | Illegal_inheritance of string * Type.t
   | Used_class_name of Type.t
   | Used_meth_name of string
   | Used_att_name of string
-	| Inheritance_loop of Type.t
+  | Inheritance_loop of Type.t
   | Non_existing_class of Type.t
   | Non_existing_method of Type.t * string
   | Non_existing_attribute of Type.t * string
@@ -21,6 +22,11 @@ let report_error = function
   | Illegal_class_name t ->
       print_string "Illegal class name : ";
       print_endline (Type.stringOf t) 
+  | Illegal_inheritance (s,t) ->
+      print_string "Class ";
+      print_string s;
+      print_string " cannot inherit from type ";
+      print_endline (Type.stringOf t); 
   | Used_class_name t ->
       print_string "Second use of the same class name : ";
 			print_endline (Type.stringOf t)
@@ -39,12 +45,12 @@ let report_error = function
 	| Non_existing_method (t,m) ->
       print_string "The method ";
 			print_string m;
-			print_string "is not define in the class ";
+			print_string " is not define in the class ";
 			print_endline (Type.stringOf t)
 	| Non_existing_attribute (c,a) ->
       print_string "The attribute ";
 			print_string a;
-			print_string "is not define in the class ";
+			print_string " is not define in the class ";
 			print_endline (Type.stringOf c)
 	| Args_Error (m,id) ->
 		begin
@@ -66,8 +72,8 @@ let report_error = function
 		Location.print loc
 	| Incorrect_type (type1,type2) ->
 		print_string ("The expression has type " ^ (Type.stringOf type1));
-		print_string ("but an expression of type " ^ (Type.stringOf type2));
-		print_endline "was excepted"
+		print_string (" but an expression of type " ^ (Type.stringOf type2));
+		print_endline " was expected"
 	| Incorrect_var_type (var,var_type,exp_type) ->
 		print_string "The expression has a type ";
 		print_string (Type.stringOf exp_type);
@@ -77,9 +83,13 @@ let report_error = function
 		print_endline (Type.stringOf var_type)
 	| Non_typed_exp	->
 		print_endline "The expression has no type"
+	
 
 let illegal_class_name str loc =
   raise (Error (Illegal_class_name str,loc))
+
+let illegal_inheritance str name loc =
+  raise (Error (Illegal_inheritance (str,name),loc))
 
 let used_class_name str loc =
   raise (Error (Used_class_name str,loc))

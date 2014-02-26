@@ -1,0 +1,11 @@
+class A{
+	Int foo(Int bar){
+		bar
+	}
+}
+
+class B extends A{
+	String foo(String bar){
+		bar
+	}
+}

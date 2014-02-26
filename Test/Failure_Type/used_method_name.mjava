@@ -1,0 +1,9 @@
+class A {
+	Int foo(){
+		4
+	}
+
+	Boolean foo(String bar){
+		true
+	}
+}

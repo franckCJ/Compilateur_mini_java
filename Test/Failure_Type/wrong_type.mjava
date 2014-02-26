@@ -1,0 +1,4 @@
+class A 
+{
+	Int a = "a"	
+}

@@ -2,9 +2,6 @@ open AST
 open Type
 open TypeError;;
 
-(* supprimer l'héritage de int, string et boolean *)
-(* Vérifier qu'un attribut d'une classes n'est pas l'attribut d'une classe mère *)
-
 let protected_classes = [fromString "Object" ; fromString "Int" ; fromString "String" ; fromString "Boolean"]
 
 let class_table = Hashtbl.create 0
@@ -34,20 +31,29 @@ let exists_type value_type =
 		| _ 	 -> Hashtbl.mem class_table value_type
 
 let rec is_parent t1 t2 =
+	let type_t1 = Located.elem_of t1 in
 	let type_t2 = Located.elem_of t2 in
-	try
-		let parent,atts,meths,loc = Hashtbl.find class_table type_t2 in
-		let type_parent = Located.elem_of parent in
-		match List.mem type_parent protected_classes with 
-			|	true -> false
-			| _ 	->
-				begin
-				match Located.elem_of t1 with
-					| type_parent	-> true
-					| _  					-> is_parent t1 parent
-				end
-	with Not_found ->
-		non_existing_class type_t2 (Located.loc_of t2)
+	match compare_type type_t1 type_t2 with
+		| true -> true
+		| _ 	 -> 
+			begin
+			match List.mem type_t2 protected_classes with	
+				| true -> incorrect_type type_t2 type_t1 (Located.loc_of t2)
+				| _ 	 -> 
+					try
+						let parent,atts,meths,loc = Hashtbl.find class_table type_t2 in
+						let type_parent = Located.elem_of parent in
+						match List.mem type_parent protected_classes with 
+							|	true -> false
+							| _ 	->
+								begin
+								match type_t1 with
+									| type_parent	-> true
+									| _  					-> is_parent t1 parent
+								end
+					with Not_found ->
+						non_existing_class type_t2 (Located.loc_of t2)
+			end
 
 let rec common_parent t1 t2 =
 	let type_t1 = Located.elem_of t1 in
@@ -105,36 +111,49 @@ let rec check_args_type meth_name loc args = function
 let rec find_meth_type meth_name type_list class_called = 
 	let class_name = Located.elem_of class_called in
 	let class_loc = Located.loc_of class_called in
-	try
-		let parent,atts,meths,loc = Hashtbl.find class_table class_name in
+	match List.mem class_name protected_classes with
+		| true -> non_existing_method class_name meth_name class_loc
+		| _ 	 ->
 			try
-				let sign,mloc = Hashtbl.find meths meth_name in
-				let args = get_args_list sign in
-				let res = get_return_type sign in
-				check_args_type meth_name class_loc args type_list;
-				res
-			with Not_found ->
-				match List.mem (Located.elem_of parent) protected_classes with
-					| true 	-> non_existing_method class_name meth_name loc
-					| _ 		-> find_meth_type meth_name type_list (Located.mk_elem (Located.elem_of parent) class_loc)
-		with Not_found ->
-			non_existing_class class_name class_loc
+				let parent,atts,meths,loc = Hashtbl.find class_table class_name in
+					try
+						let sign,mloc = Hashtbl.find meths meth_name in
+						let args = get_args_list sign in
+						let res = get_return_type sign in
+						check_args_type meth_name class_loc args type_list;
+						res
+					with Not_found ->
+						match List.mem (Located.elem_of parent) protected_classes with
+							| true 	-> non_existing_method class_name meth_name loc
+							| _ 		-> find_meth_type meth_name type_list (Located.mk_elem (Located.elem_of parent) class_loc)
+				with Not_found ->
+					non_existing_class class_name class_loc
 
 (*********** Vérification des classes, méthodes et attributs **********
- *********** et création des tables globales 								 **********) 
+ *********** 				 et création des tables globales 				 **********) 
+let rec filter_atts att_list att_table = function
+	| [] -> att_list
+	| h::t ->
+		let (name,atype,loc) = h in
+		begin
+		match Hashtbl.mem att_table name with
+			| true  -> used_att_name name loc
+			| false -> filter_atts ((name,atype,loc)::att_list) att_table t
+		end
+
 let rec filter_meth_by_sig meth_list ploc meth_table = function
-	| []		-> meth_list
-	| (name,sign)::t as curr_list ->
+	| [] -> meth_list
+	| h::t ->
+			let (name,sign,mloc) = h in
 		try
 			let (local_sign,loc) = Hashtbl.find meth_table name in
-			let comp = compare_sig sign local_sign in
-			match comp with
+			match compare_sig sign local_sign with
 				| 0	-> filter_meth_by_sig meth_list ploc meth_table t
 				| _ -> sig_error name loc ploc
 		with Not_found ->
-			filter_meth_by_sig ((name,sign)::meth_list) ploc meth_table t
+			filter_meth_by_sig ((name,sign,mloc)::meth_list) ploc meth_table t
 			
-let rec check_extends_cycle meth_list class_list key (parent,atts,meths,loc) =
+let rec check_extends_cycle att_list meth_list class_list key (parent,atts,meths,loc) =
 	match List.mem key protected_classes with
 		| true -> ()
 		| _ 	 ->
@@ -143,12 +162,16 @@ let rec check_extends_cycle meth_list class_list key (parent,atts,meths,loc) =
 				| true 	-> inheritance_loop key loc 
 				| false ->
 					let parent_name = Located.elem_of parent in
-					try
-						let pparent,patts,pmeths,ploc = Hashtbl.find class_table parent_name in
-						let remaining_meths = filter_meth_by_sig [] ploc pmeths meth_list in
-						check_extends_cycle remaining_meths (key::class_list) parent_name (pparent,patts,pmeths,ploc)
-					with Not_found ->
-						non_existing_class (Located.elem_of parent) (Located.loc_of parent)
+					match (stringOf parent_name) with
+					| "Object" -> ()
+					| _ 			 ->
+						try
+							let pparent,patts,pmeths,ploc = Hashtbl.find class_table parent_name in
+							let remaining_atts = filter_atts [] patts att_list in
+							let remaining_meths = filter_meth_by_sig [] ploc pmeths meth_list in
+							check_extends_cycle remaining_atts remaining_meths (key::class_list) parent_name (pparent,patts,pmeths,ploc)
+						with Not_found ->
+							non_existing_class (Located.elem_of parent) (Located.loc_of parent)
 			end
 
 let rec find_att att_table att_list =
@@ -159,7 +182,7 @@ let rec find_att att_table att_list =
 			match name_used with
 				| true	-> used_att_name h.aname h.aloc
 				| false ->
-					Hashtbl.add att_table h.aname (Located.elem_of h.atype,h.aloc);
+					Hashtbl.add att_table h.aname ((Located.elem_of h.atype),h.aloc);
 					find_att att_table t
 
 let create_sig m =
@@ -193,14 +216,19 @@ let rec find_classes = function
 					match List.mem (fromString h.cname) protected_classes with
 						| true	-> illegal_class_name (fromString h.cname) h.cloc
 						| _			->
-							let att_table = find_att (Hashtbl.create 0) h.cattributes in
-							let meth_table = find_method (Hashtbl.create 0) h.cmethods in
-							Hashtbl.add class_table (fromString h.cname) (h.cparent,att_table,meth_table,h.cloc);
-							find_classes t
+							begin
+							match (stringOf (Located.elem_of h.cparent)) with 
+								| "Int" | "String" | "Boolean" -> illegal_inheritance h.cname (Located.elem_of h.cparent) h.cloc
+								| _ 													 ->
+									let att_table = find_att (Hashtbl.create 0) h.cattributes in
+									let meth_table = find_method (Hashtbl.create 0) h.cmethods in
+									Hashtbl.add class_table (fromString h.cname) (h.cparent,att_table,meth_table,h.cloc);
+									find_classes t
+							end
 					end
 
 
-(*********** Détermination des correspondances des types     **********)
+(*********** Détermination des correspondances des types **********)
 let value_type = function
 	| String s 	-> fromString "String"
 	| Int i 		-> fromString "Int"
@@ -210,7 +238,6 @@ let value_type = function
 let call_type op first_typed typed_list =
 	let first_type = get_type first_typed in
 	let type_list = List.map (function hd -> get_type hd) typed_list in
-	let head_type = List.hd type_list in
 	match op with
 		| "not" 			->
 			begin
@@ -225,6 +252,7 @@ let call_type op first_typed typed_list =
 				| _			-> incorrect_type first_type (fromString "Int") first_typed.eloc
 			end
 		| "sub" | "add" | "mul" | "div" | "mod"	->
+			let head_type = List.hd type_list in
 			begin
 			match (stringOf first_type),(stringOf head_type) with
 				| "Int","Int" -> first_type
@@ -233,6 +261,7 @@ let call_type op first_typed typed_list =
 				| _ 					-> incorrect_type first_type (fromString "Int") first_typed.eloc
 			end	
 		| "gt" | "ge" | "lt" | "le" | "eq" | "neq"	->
+			let head_type = List.hd type_list in
 			begin
 			match (stringOf first_type),(stringOf head_type) with
 				| "Int","Int" -> fromString "Boolean"
@@ -241,6 +270,7 @@ let call_type op first_typed typed_list =
 				| _ 					-> incorrect_type first_type (fromString "Boolean") first_typed.eloc
 			end
 		| "and" | "or"	->
+			let head_type = List.hd type_list in
 			begin
 			match (stringOf first_type),(stringOf head_type) with
 				| "Boolean","Boolean"	-> fromString "Boolean"
@@ -291,7 +321,7 @@ let rec type_expression class_name args_table local_table e =
 					let typed_exp = curry_type_expression x in
 					begin
 					match (var_type,typed_exp.etype) with
-						| t1, Some t2 ->
+						| _ as t1, Some t2 ->
 							begin
 							match (is_parent (Located.mk_elem t1 typed_exp.eloc) (Located.mk_elem t2 typed_exp.eloc)) with
 								| true 	-> Some t1
@@ -333,14 +363,14 @@ let type_attribute class_name a =
 		| false,_	-> non_existing_class a_type (Located.loc_of a.atype)
 		|	_,None 		-> a
 		|	_,Some e 	->
-			let typed_exp = type_expression class_name (Hashtbl.create 0) (Hashtbl.create 0) e in
-			let at = { 
-				a with
-				adefault = Some typed_exp;
-			} in				
+			let typed_exp = type_expression class_name (Hashtbl.create 0) (Hashtbl.create 0) e in		
 			match typed_exp.etype with
 				| None 		-> non_typed_exp typed_exp.eloc
 				| Some t 	->
+					let at = { 
+						a with
+						adefault = Some typed_exp;
+					} in		
 					begin
 					match is_parent (Located.mk_elem a_type a.aloc) (Located.mk_elem t typed_exp.eloc) with
 						| true 	-> at
@@ -375,14 +405,14 @@ let type_class c =
 	} in
 	cl
 
-let get_keys htbl =
-	let result = [] in
-	Hashtbl.iter (fun k v -> k::result;()) htbl;
-	result
+let make_list h = 
+	Hashtbl.fold (fun k (v,w) acc -> (k,v,w) :: acc) h []
 
 let type_program (cl,e_op) = 
+	Hashtbl.clear class_table;
 	find_classes cl;
-	Hashtbl.iter (fun key (parent,atts,meths,loc) -> (check_extends_cycle (get_keys meths) [] key (parent,atts,meths,loc))) class_table;
+	Hashtbl.iter (fun key (parent,atts,meths,loc) -> 
+		(check_extends_cycle (make_list atts) (make_list meths) [] key (parent,atts,meths,loc))) class_table;
 	let typed_cl = List.map type_class cl in
 	match e_op with
 		| None 		-> typed_cl,None
