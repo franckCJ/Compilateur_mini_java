@@ -4,6 +4,12 @@ open TypeError;;
 
 let protected_classes = [fromString "Object" ; fromString "Int" ; fromString "String" ; fromString "Boolean"]
 
+let value_type = function
+	| String s 	-> fromString "String"
+	| Int i 		-> fromString "Int"
+	| Null 			-> fromString "Null"
+	| Boolean b -> fromString "Boolean"
+
 let class_table = Hashtbl.create 0
 
 let compare_type t1 t2 =
@@ -14,6 +20,14 @@ let compare_type t1 t2 =
 let compare_sig s1 s2 =
 	String.compare (string_of_func s1) (string_of_func s2)
 
+(* Construit la signature d'une methode *)
+let create_sig m =
+	let name_list,type_list = List.split m.margstype in
+	let args_type = List.map Located.elem_of type_list in
+	let return_type = Located.elem_of m.mreturntype in
+	create_func (args_type,return_type)
+
+(* Retourne le type d'une expression *)
 let get_type exp =
 	match exp.etype with
 		| None		-> non_typed_exp exp.eloc
@@ -168,7 +182,10 @@ let rec filter_meth_by_sig meth_list ploc meth_table = function
 			filter_meth_by_sig ((name,sign,mloc)::meth_list) ploc meth_table t
 
 (**
- * 
+ * Verifie :
+ * Que le nom de classe n'est pas un nom protege
+ * Qu'il n'herite pas d'une classe dont il serait parent (boucle d'heritage)
+ * Que ces noms d'attributs et de methodes n'entrent pas en conflit avec ceux de ses parents 
  *)			
 let rec check_inheritance att_list meth_list class_list key (parent,atts,meths,loc) =
 	match List.mem key protected_classes with
@@ -191,6 +208,7 @@ let rec check_inheritance att_list meth_list class_list key (parent,atts,meths,l
 							non_existing_class (Located.elem_of parent) (Located.loc_of parent)
 			end
 
+(* Construit la table des attributs d'une classe *)
 let rec find_att att_table = function
 		| [] 		-> att_table
 		| h::t	-> 
@@ -200,12 +218,7 @@ let rec find_att att_table = function
 					Hashtbl.add att_table h.aname ((Located.elem_of h.atype),h.aloc);
 					find_att att_table t
 
-let create_sig m =
-	let name_list,type_list = List.split m.margstype in
-	let args_type = List.map Located.elem_of type_list in
-	let return_type = Located.elem_of m.mreturntype in
-	create_func (args_type,return_type)
-
+(* Construit la table des methodes d'une classe *)
 let rec find_method meth_table = function
 		| [] 		-> meth_table
 		| h::t	->
@@ -218,11 +231,11 @@ let rec find_method meth_table = function
 					find_method meth_table t
 			end
 
+(* Construit la table des classes d'un programme *)
 let rec find_classes = function
 		| [] 		-> ()
 		| h::t	-> 
-			let name_used = Hashtbl.mem class_table (fromString h.cname) in
-			match name_used with
+			match Hashtbl.mem class_table (fromString h.cname) with
 				| true	-> used_class_name (fromString h.cname) h.cloc 
 				| false ->
 					begin
@@ -240,18 +253,12 @@ let rec find_classes = function
 							end
 					end
 
-
-(*********** Détermination des correspondances des types **********)
-let value_type = function
-	| String s 	-> fromString "String"
-	| Int i 		-> fromString "Int"
-	| Null 			-> fromString "Null"
-	| Boolean b -> fromString "Boolean"
-
+(* Retourne le type d'une operation *)
 let call_type op first_typed typed_list =
 	let first_type = get_type first_typed in
 	let type_list = List.map (function hd -> get_type hd) typed_list in
 	match List.mem first_type protected_classes with
+	(* On traite d'abord les operations sur les Int, Boolean, et String *)
 		| true -> 
 			begin
 			match op with
@@ -303,6 +310,7 @@ let call_type op first_typed typed_list =
 					end
 				| _ -> non_existing_method first_type op first_typed.eloc
 			end
+		(* Puis on traite les operations sur les autres objets *)
 		| false ->
 			begin
 			match op with
@@ -313,11 +321,13 @@ let call_type op first_typed typed_list =
 						| true -> fromString "Boolean"
 						| _ 	 -> incorrect_type first_type head_type first_typed.eloc
 					end
+				(* Il 'sagit donc d'une invoquation de methode *)
 				| _ as meth ->
 					let class_type = Located.mk_elem first_type first_typed.eloc in
 					find_meth_type op typed_list class_type
 			end
 
+(* retourne le type d'une expression *)
 let rec type_expression class_name args_table local_table e =
 	let curry_type_expression = type_expression class_name args_table local_table in
 	let exp = { 
@@ -391,6 +401,7 @@ let rec type_expression class_name args_table local_table e =
 	} in
 	exp
 
+(* Type les attributs d'une classe *)
 let type_attribute class_name a = 
 	let a_type = Located.elem_of a.atype in
 	let correct_type = exists_type a_type in
@@ -415,6 +426,7 @@ let type_attribute class_name a =
 						|	_ 		-> incorrect_var_type a.aname a_type t a.aloc
 					end
 
+(* Type les methodes d'une classe *)
 let type_method class_name m =
 	(* Creation et remplissage de la table des arguments de la methode *)
 	let arg_table = Hashtbl.create (List.length m.margstype) in
@@ -435,6 +447,7 @@ let type_method class_name m =
 				| _ 		-> return_type_error m.mname (Located.elem_of m.mreturntype) t  m.mloc
 			end
 
+(* Type une classe *)
 let type_class c =
 	(* Typage des attributs de la classe *)
 	let typed_attr = List.map (type_attribute (fromString c.cname)) c.cattributes in
@@ -447,6 +460,7 @@ let type_class c =
 	} in
 	cl
 
+(* Transforme une Hashtbl en liste *)
 let make_list h = 
 	Hashtbl.fold (fun k (v,w) acc -> (k,v,w) :: acc) h []
 
@@ -455,7 +469,7 @@ let make_list h =
  *
  * cl - liste d'astclass
  *
- * e_op - expression suivant les astclass
+ * e_op - expressions optionnelles
  *)
 let type_program (cl,e_op) = 
 	Hashtbl.clear class_table;
