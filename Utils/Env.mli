@@ -16,6 +16,3 @@ val define : ('a,'b) t -> 'a -> 'b -> ('a,'b) t
 
 (* iterate a function over all the bindings of the environment *)
 val iter : ('a * 'b -> unit) -> ('a,'b) t -> unit
-
-(* create a list of keys from the environment *)
-val get_keys : ('a,'b) t -> 'a list

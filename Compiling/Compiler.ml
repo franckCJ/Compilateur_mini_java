@@ -1,56 +1,92 @@
 open AST
 open Env
 
-type value = 
-  | String of string
-  | Int of int
-  | Null
-  | Boolean of bool
-
-type expression_desc = 
-  | New of Type.t Located.t
-  | Seq of expression * expression
-  | Call of expression * string * expression list
-  | If of expression * expression * expression
-  | Val of value
-  | Var of string
-  | Assign of string * expression
-  | Define of string * Type.t Located.t * expression * expression
-  | Cast of Type.t Located.t * expression
-  | Instanceof of expression * Type.t Located.t
-
-type attr =
+(* type attr =
 	{
 		aname: string;
 		default_val : expression_desc;
-	}
+	}*)
 
-type meth =
+(*type meth =
 	{
 		mname: string;
-	}
+	}*)
 
 type meth_desc =
 	{
-		mdesc: string;
 		mbody: expression_desc;
 		margs: string list;
 	}
 
-let rec compile_class cl =
-	let mother_class = Located.elem_of cl.cparent in
-	if (mem class_desc cl)
-	
-	match (Located.elem_of cl.cparent) with
-		|"Object" ->
-		|"Int" ->
-		|"String" ->
-		|"Boolean" ->
+let rec find_class name class_list =
+	match class_list with
+		| [e] 	-> e,[]
+		| h::t	-> 
+			begin
+			match h.cname with
+				| name	-> h,t
+				| _			->
+					let found,remain = find_class name t in
+					found,h::remain
+			end
 
-let compile (cl,e_op) = 
-	let class_desc = in
-	let object_desc = in
-	let meth_table = in
-	let compilation_tables = List.map compile_class cl in
-	compilation_tables,op
+let rec compile_att att_list =
+	match att_list with
+		| []		-> []
+		| h::t	->(h.aname,h.adefault)::compile_att t
+
+let rec remove_meth meth_name = function
+	| []		-> []
+	|	h::t	->
+		let beg_index = String.index h '-' in
+		let end_index = (String.length h)-1 in
+		begin
+		match String.sub h beg_index end_index with
+			| meth_name	-> t
+			| _					-> h::(remove_meth meth_name t)
+		end
+
+let rec compile_meth cl meth_table mother_meth meth_list =
+	match meth_list with
+		| [] 		-> meth_table,mother_meth
+		| h::t	->
+			let new_moth_meth = remove_meth h.mname mother_meth in
+			let curr_name = (cl ^ "-" ^ h.mname) in
+			let new_meth_table = define meth_table curr_name h.mbody in
+			let (new_meth_table,new_list) = compile_meth cl new_meth_table new_moth_meth t in
+			new_meth_table,(curr_name::new_list)
+
+let rec compile_class meth_table class_desc_table object_desc_table clist cl =
+	let mother_type = Located.elem_of cl.cparent in
+	let curr_meth_table,curr_class_desc_table,curr_object_desc_table = 
+	match mem class_desc_table mother_type with
+		| false	->
+			let (mother_class,remain_list) = find_class (Type.stringOf mother_type) clist in
+			compile_class meth_table class_desc_table object_desc_table remain_list mother_class
+		| true	-> meth_table,class_desc_table,object_desc_table
+	in
+	let parent::mother_meth = find curr_class_desc_table mother_type in
+ 	let (new_meth_table,meth_name_list) = compile_meth cl.cname curr_meth_table mother_meth cl.cmethods in
+	let class_desc = ((Type.stringOf mother_type)::meth_name_list) in
+	let mother_object = find curr_object_desc_table mother_type in
+	let object_desc = mother_object@(compile_att cl.cattributes) in
+	let new_class_desc_table = define class_desc_table (Type.fromString cl.cname) class_desc in
+	let new_object_desc_table = define object_desc_table (Type.fromString cl.cname) object_desc in
+	new_meth_table,new_class_desc_table,new_object_desc_table
+	
+let rec class_compilation clist meth_table class_desc object_desc = function
+	| [] 		-> meth_table,class_desc,object_desc
+	| h::t	->
+		let nmtable,ncdesc,nobjdesc =
+			compile_class meth_table class_desc object_desc clist h
+		in
+		class_compilation clist nmtable ncdesc nobjdesc t
+
+let compile_program (cl,e_op) = 
+	let class_desc = initial () in
+	let object_desc = initial () in
+	let meth_table = initial () in
+	let compile_func = class_compilation cl meth_table class_desc object_desc in
+	let compilation_tables = compile_func cl in
+	compilation_tables,e_op
 
