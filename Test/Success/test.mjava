@@ -37,12 +37,12 @@ class Test extends Main
 
 	Int count()
 	{
-		value
+		this.set_value(4,state)
 	}
 }
 
 Test test = new Test in {
 	Int a = test.set_value(4,false) in{
-		a+test.count()
+		a+test.count();
 	}
 }
