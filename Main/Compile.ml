@@ -8,7 +8,7 @@ let execute lexbuf verbose =
 		if verbose then AST.print_program typed_ast;
 		let compiled_prog = Compiler.compile_program typed_ast in
 		print_endline "successfull compiling";
-		Execute.execute_program compiled_prog;
+		Execute.evaluate_program compiled_prog;
 		print_endline "successfull execution";
   with 
     | Parser.Error ->
@@ -20,3 +20,5 @@ let execute lexbuf verbose =
     | TypeError.Error(e,l) ->
       TypeError.report_error e;
       Location.print l
+    | Execute.Error ->
+			print_endline "Unexpected error"
