@@ -1,23 +1,6 @@
 open AST
 open Env
 
-(* type attr =
-	{
-		aname: string;
-		default_val : expression_desc;
-	}*)
-
-(*type meth =
-	{
-		mname: string;
-	}*)
-
-type meth_desc =
-	{
-		mbody: expression_desc;
-		margs: string list;
-	}
-
 let rec find_class name class_list =
 	match class_list with
 		| [e] 	-> e,[]
@@ -52,7 +35,8 @@ let rec compile_meth cl meth_table mother_meth meth_list =
 		| h::t	->
 			let new_moth_meth = remove_meth h.mname mother_meth in
 			let curr_name = (cl ^ "-" ^ h.mname) in
-			let new_meth_table = define meth_table curr_name h.mbody in
+			let args,loc = List.split h.margstype in
+			let new_meth_table = define meth_table curr_name (h.mbody,args) in
 			let (new_meth_table,new_list) = compile_meth cl new_meth_table new_moth_meth t in
 			new_meth_table,(curr_name::new_list)
 
@@ -86,7 +70,9 @@ let compile_program (cl,e_op) =
 	let class_desc = initial () in
 	let object_desc = initial () in
 	let meth_table = initial () in
-	let compile_func = class_compilation cl meth_table class_desc object_desc in
+	let initialised_class_desc = define class_desc (Type.fromString "Object") ["Object"] in
+	let initialised_object_desc = define object_desc (Type.fromString "Object") [] in
+	let compile_func = class_compilation cl meth_table initialised_class_desc initialised_object_desc in
 	let compilation_tables = compile_func cl in
 	compilation_tables,e_op
 
