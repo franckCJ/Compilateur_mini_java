@@ -13,7 +13,7 @@ type t =
   | Sig_Error of string * Location.t
   | Incorrect_type of Type.t * Type.t
   | Incorrect_var_type of string * Type.t * Type.t
-  | Non_typed_exp 
+  | Non_typed_exp
 
 exception Error of t * Location.t;;
 

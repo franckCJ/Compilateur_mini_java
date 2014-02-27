@@ -260,7 +260,7 @@ let call_type op first_typed typed_list =
 				| _,"Int" 		-> incorrect_type first_type (fromString "Int") first_typed.eloc
 				| _ 					-> incorrect_type first_type (fromString "Int") first_typed.eloc
 			end	
-		| "gt" | "ge" | "lt" | "le" | "eq" | "neq"	->
+		| "gt" | "ge" | "lt" | "le" ->
 			let head_type = List.hd type_list in
 			begin
 			match (stringOf first_type),(stringOf head_type) with
@@ -268,6 +268,13 @@ let call_type op first_typed typed_list =
 				| "Int",_ 		-> incorrect_type head_type (fromString "Boolean") (List.hd typed_list).eloc
 				| _,"Int" 		-> incorrect_type first_type (fromString "Boolean") first_typed.eloc
 				| _ 					-> incorrect_type first_type (fromString "Boolean") first_typed.eloc
+			end
+		| "eq" | "neq"	->
+			let head_type = List.hd type_list in
+			begin
+			match compare_type first_type head_type with
+				| true -> fromString "Boolean"
+				| _ 	 -> incorrect_type first_type head_type first_typed.eloc
 			end
 		| "and" | "or"	->
 			let head_type = List.hd type_list in

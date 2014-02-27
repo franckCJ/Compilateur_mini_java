@@ -6,8 +6,8 @@ let execute lexbuf verbose =
 		let typed_ast = Typer.type_program ast in
 		print_endline "successfull typing";
 		if verbose then AST.print_program typed_ast;
-		let compiled_prog = Compiler.compile_program typed_ast in
-		print_endline "successfull Compiling";
+		(* let compiled_prog = Compiler.compile_program typed_ast in
+		print_endline "successfull Compiling"; *)
   with 
     | Parser.Error ->
       print_string "Syntax error: ";

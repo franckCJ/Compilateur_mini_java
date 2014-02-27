@@ -1,23 +1,28 @@
 class Main
 {
-
+	Int set_value(Int temp_value, Boolean exact){
+		1
+	}
 }
 
 class Test extends Main
 {
 	Boolean state = true
 	Int value
-	Boolean make_class()
+	Boolean bar()
 	{
-		if ((value > 3) || (value <= -5)) (
-			state
-		)
-		else (
-			false
-		)
+		Boolean foo = false in {
+			if ((value > 3) || (value <= -5)) (
+				"foo" == "foo"
+			)
+			else (
+				foo
+			);
+			foo = true
+		}
 	}
 
-  	Int get_value(Int temp_value, Boolean exact)
+  	Int set_value(Int temp_value, Boolean exact)
 	{
 		if (!exact) (
 			value = temp_value
@@ -28,9 +33,16 @@ class Test extends Main
 	}
 
 	String local_string = "foobar"
+	Boolean fuz = state
 
 	Int count()
 	{
 		value
+	}
+}
+
+Test test = new Test in {
+	Int a = test.set_value(4,false) in{
+		a+test.count()
 	}
 }
