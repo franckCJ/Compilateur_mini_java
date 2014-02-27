@@ -1,9 +1,9 @@
 class A {
 	Int foo(Int bar){
-
+		bar
 	}
 }
 
 class B {
-	Int foobar = A.foo("fuz")
+	Int foobar = (new A).foo("fuz")
 }

@@ -25,32 +25,36 @@ let report_error = function
   | Illegal_inheritance (s,t) ->
       print_string "Class ";
       print_string s;
-      print_string " cannot inherit from type ";
-      print_endline (Type.stringOf t); 
+      print_string " cannot inherit from protected type ";
+      print_endline (Type.stringOf t) 
   | Used_class_name t ->
-      print_string "Second use of the same class name : ";
-			print_endline (Type.stringOf t)
+      print_string "A class named ";
+			print_string (Type.stringOf t);
+			print_endline " has already been defined"
   | Used_meth_name s ->
-      print_string "Second use of the same method name : ";
-			print_endline s
+      print_string "A method named ";
+			print_string s;
+			print_endline " has already been defined"
   | Used_att_name s ->
-      print_string "Second use of the same attribute name : ";
-			print_endline s
+      print_string "An attribute named ";
+			print_string s;
+			print_endline " has already been defined"
   | Inheritance_loop t ->
-      print_string "A loop in the extends is done at the level of the class : ";
+      print_string "Inheritance loop for the class : ";
 			print_endline (Type.stringOf t)
 	| Non_existing_class t ->
-      print_string "The class used doesn't exist : ";
-			print_endline (Type.stringOf t)
+      print_string "The class ";
+			print_string (Type.stringOf t);
+			print_endline " doesn't exist"
 	| Non_existing_method (t,m) ->
       print_string "The method ";
 			print_string m;
-			print_string " is not define in the class ";
+			print_string " is not defined in the class ";
 			print_endline (Type.stringOf t)
 	| Non_existing_attribute (c,a) ->
       print_string "The attribute ";
 			print_string a;
-			print_string " is not define in the class ";
+			print_string " is not defined in the class ";
 			print_endline (Type.stringOf c)
 	| Args_Error (m,id) ->
 		begin
@@ -79,7 +83,7 @@ let report_error = function
 		print_string (Type.stringOf exp_type);
 		print_string " which doesn't match " ;
 		print_string var;
-		print_string " type : ";
+		print_string " of type ";
 		print_endline (Type.stringOf var_type)
 	| Non_typed_exp	->
 		print_endline "The expression has no type"
