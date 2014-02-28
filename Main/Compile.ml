@@ -8,6 +8,7 @@ let execute lexbuf verbose =
 		if verbose then AST.print_program typed_ast;
 		let compiled_prog = Compiler.compile_program typed_ast in
 		print_endline "successfull compiling";
+    if verbose then Compiler.print_program compiled_prog;
 		Execute.evaluate_program compiled_prog;
 		print_endline "successfull execution";
   with 

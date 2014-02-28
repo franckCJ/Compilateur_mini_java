@@ -150,3 +150,20 @@ let compile_program (cl,e_op) =
 	let compilation_tables = compile_func cl in
 	compilation_tables,e_op
 
+let print_program ((meth_table,class_desc,object_desc),e_op) = 
+	print_endline "Methods :";
+	iter (fun (k,(v,l)) -> print_string k; print_string " : ";print_endline (AST.string_of_expression v)) meth_table;
+	print_newline();
+	print_endline "Class Descriptors :";
+	iter (fun (k,v) -> print_string (Type.stringOf k); print_string " : "; 
+		List.iter (fun m -> print_string m; print_string " ") v; print_newline();
+	) class_desc;
+	print_endline "Object Descriptors :";
+	iter (fun (k,v) -> print_string (Type.stringOf k); print_string " : "; 
+		List.iter (fun (m,n) -> print_string m; print_string " ";
+		match n with
+			| None -> ()
+			| Some e -> print_endline (AST.string_of_expression e)
+		)v;
+	) object_desc;
+	print_newline()
