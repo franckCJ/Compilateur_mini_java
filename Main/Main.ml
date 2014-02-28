@@ -23,12 +23,18 @@ let compile str =
     Location.init lexbuf file;
     print_string "opening file : ";
     print_endline filename;
+    print_endline "--------------";
     Compile.execute lexbuf !verbose;
-    close_in (input_file)
+    close_in (input_file);
+    print_newline()
   with Sys_error s ->
     print_endline ("Can't find file '" ^ file ^ "'")
 
 let () =
-  print_endline "miniJava compiler";
+	print_newline();
+	print_endline "***************************";
+  print_endline "     miniJava compiler     ";
+	print_endline "***************************";
+	print_newline();
   Arg.parse ["-v",Arg.Set verbose,"verbose mode"] compile ""
 

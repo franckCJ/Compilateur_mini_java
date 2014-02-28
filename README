@@ -7,15 +7,23 @@ ocamlbuild Main.byte (or native) to build the compiler.
 ocamlbuild Main.byte -- filename (or native) to build and then execute
 the compiler on the file given.
 
-Project :
-----------
-Parsing
-----------
-- The Parser doesn't take in account big_numbers. If a number is too big, the
-	parser raise the error "Failure("int_of_string")", and the compilation crashes
-	for all files. -> Personal error to rise.
+Caractéristiques du Compilateur :
+---------------------------------
+- Le parser ne prend pas en compte les grands nombre. Si un nombre est trop
+	grand, la compilation termine pour tous les fichiers compilés. L'erreur
+	"Failure("int_of_string")" n'est pas traitée
+- On ne peut pas hériter des types Int, String et Boolean et, par défaut, les
+	classes héritent de Object.
+- Pour l'execution, on a choisit de considérer les Int, String, Boolean comme
+	des valeurs.
+- L'opérateur de cast est souple, on peut caster sur n'importe quel type. Il revient
+	au programmeur de vérifier si le transtypage est bon par l'opérateur instanceof.
 
-----------
-Typing
-----------
-Cast non sur, charge au programmeur de vérifier si le transtypage est bon.
+Utilisation :
+-------------
+Le compilateur peut être compilé par la commande make, clause all.
+Pour les tests, différentes clauses permettent de lancer les tests :
+- test : permet de lancer les tests qui réussissent
+- syntax : permet de lancer les tests qui échouent au parser
+- type : permet de lancer les tests qui échouent au typer
+- execute : permet de lancer les tests qui échouent à l'évaluation
