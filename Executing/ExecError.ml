@@ -16,5 +16,5 @@ let report_error = function
 let unexpected_error loc =
 	raise (Error (Unexpected_Error,loc))
 
-let undefined_attribute var var_type exp_type loc =
+let undefined_attribute s loc =
 	raise (Error (Undefined_attribute s,loc))

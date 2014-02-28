@@ -81,6 +81,16 @@ let rec create_object meth_table class_desc object_desc obj_val =
 		| _					->
 			let att_list = find object_desc obj_val in
 			Object (obj_val,evaluate_attributes obj_val meth_table class_desc object_desc (initial()) att_list)
+(**
+ * Evalue les 
+ * les tables a jour
+ *
+ * Prend en entrée les tables de méthodes, de descripteurs de classe et de
+ * descripteur d'objet
+ * Prend l'expression à évaluer
+ *
+ * Imprime la valeur retournée par l'évaluation
+ *)
 
 and evaluate_attributes obj_val meth_table class_desc object_desc env = function
 	| []		-> []
@@ -248,7 +258,7 @@ and evaluate_expression meth_table class_desc object_desc env_object env e =
 						try
 							List.nth value_list index
 						with Failure "nth"	->
-							undefined_attribute s loc
+							undefined_attribute s e.eloc
 					in
 					env,found
 			end
