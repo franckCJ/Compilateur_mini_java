@@ -1,5 +1,6 @@
 class Main
 {
+	String name
 	Int set_value(Int temp_value, Boolean exact){
 		1
 	}
@@ -43,6 +44,6 @@ class Test extends Main
 
 Test test = new Test in {
 	Int a = test.set_value(4,false) in{
-		a+test.count();
+		a+test.count()
 	}
 }

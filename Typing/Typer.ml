@@ -71,8 +71,19 @@ let has_common_parent t1 t2 =
 (**
  * Renvoie le type d'une variable en cherchant successivement
  * parmi les variables locales, puis parmi les arguments
- * et enfin parmi les attributs de la classe
+ * et enfin parmi les attributs de la classe et de ses parents
  *)
+let rec find_att class_name var_loc var_name =
+	match List.mem class_name protected_classes with 
+		| true	-> non_existing_attribute class_name var_name var_loc
+		| _			->
+			let (parent,att_table,meth_table,loc) = Hashtbl.find class_table class_name in
+			try
+				let att_type,loc = Hashtbl.find att_table var_name in
+				att_type
+			with Not_found ->
+				find_att (Located.elem_of parent) var_loc var_name
+
 let find_type class_name args_table local_table var_loc var_name =
 	try
 		Hashtbl.find local_table var_name
@@ -80,12 +91,7 @@ let find_type class_name args_table local_table var_loc var_name =
 		try
 			Hashtbl.find args_table var_name
 		with Not_found ->
-			try
-				let (parent,att_table,meth_table,loc) = Hashtbl.find class_table class_name in
-				let att_type,loc = Hashtbl.find att_table var_name in
-				att_type
-			with Not_found ->
-				non_existing_attribute class_name var_name var_loc
+			find_att class_name var_loc var_name
 
 (** 
  * Verifie que les arguments passés dans un appel de methode

@@ -20,5 +20,6 @@ let execute lexbuf verbose =
     | TypeError.Error(e,l) ->
       TypeError.report_error e;
       Location.print l
-    | Execute.Error ->
-			print_endline "Unexpected error"
+    | ExecError.Error(e,l) ->
+			ExecError.report_error e;
+			Location.print l
