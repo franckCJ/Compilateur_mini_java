@@ -9,15 +9,17 @@ the compiler on the file given.
 
 Caractéristiques du Compilateur :
 ---------------------------------
-- Le parser ne prend pas en compte les grands nombre. Si un nombre est trop
+- Le parser ne prend pas en compte les grands nombres. Si un nombre est trop
 	grand, la compilation termine pour tous les fichiers compilés. L'erreur
 	"Failure("int_of_string")" n'est pas traitée
 - On ne peut pas hériter des types Int, String et Boolean et, par défaut, les
 	classes héritent de Object.
-- Pour l'execution, on a choisit de considérer les Int, String, Boolean comme
+- Pour l'execution, on a choisi de considérer les Int, String, Boolean comme
 	des valeurs.
 - L'opérateur de cast est souple, on peut caster sur n'importe quel type. Il revient
 	au programmeur de vérifier si le transtypage est bon par l'opérateur instanceof.
+- La récursivité est possible, mais le compilateur ne vérifie pas si la termimaison
+	est assurée.
 
 Utilisation :
 -------------
