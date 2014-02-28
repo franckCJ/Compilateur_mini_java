@@ -6,5 +6,5 @@ exception Error of t * Location.t
 val report_error : t -> unit
 
 (* raise the various errors *)
-val  unexpected_error : Location.t -> 'a
+val unexpected_error : Location.t -> 'a
 val undefined_attribute : string -> Location.t -> 'a

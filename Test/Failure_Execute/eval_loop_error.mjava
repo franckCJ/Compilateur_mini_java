@@ -1,0 +1,11 @@
+class A {
+	Boolean foo = bar
+	Boolean bar = foo
+
+	Boolean call()
+	{
+		foo
+	}
+}
+
+(new A).call()

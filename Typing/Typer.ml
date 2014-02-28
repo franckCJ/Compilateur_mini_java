@@ -336,76 +336,73 @@ let call_type op first_typed typed_list =
 (* retourne le type d'une expression *)
 let rec type_expression class_name args_table local_table e =
 	let curry_type_expression = type_expression class_name args_table local_table in
-	let exp = { 
-		e with
-		etype =
-			match e.edesc with
-				| New nval -> Some (Located.elem_of nval)
-				| Seq (x,y)	->
-					curry_type_expression x;
-					(curry_type_expression y).etype
-				| Call (x,str,lst) ->
-					let typed_x = (curry_type_expression x) in
-					let typed_list = List.map curry_type_expression lst in
-					Some (call_type str typed_x typed_list)
-				| If (x,y,z) -> 
-					let type_x  = get_type (curry_type_expression x) in
-					let cond 		= compare_type type_x (fromString "Boolean") in
-					let type_y 	= get_type (curry_type_expression y) in 
-					let type_z 	= get_type (curry_type_expression z) in
-					let (res,par)	= has_common_parent (Located.mk_elem type_y y.eloc) (Located.mk_elem type_z z.eloc) in
-						begin
-						match cond,res,par with
-						| (true,true,_)	-> Some par 
-						| (true,_,_) 		-> incorrect_type type_y type_z y.eloc
-						| (_,_,_)				-> incorrect_type type_x (fromString "Boolean") x.eloc
-						end
-				| Val v 	-> Some (value_type v)
-				|	Var str -> 
+	match e.edesc with
+		| New nval -> {edesc=New nval;etype=Some (Located.elem_of nval);eloc=e.eloc}
+		| Seq (x,y)	->
+			let expr_x = curry_type_expression x in
+			let expr_y = curry_type_expression y in
+			{edesc=Seq(expr_x,expr_y);etype=expr_y.etype;eloc=e.eloc}
+		| Call (x,str,lst) ->
+			let expr_x = curry_type_expression x in
+			let typed_list = List.map curry_type_expression lst in
+			let return_type = Some (call_type str expr_x typed_list) in
+			{edesc=Call(expr_x,str,typed_list);etype=return_type;eloc=e.eloc}
+		| If (x,y,z) -> 
+			let expr_x  = curry_type_expression x in
+			let cond 		= compare_type (get_type expr_x) (fromString "Boolean") in
+			let expr_y 	= curry_type_expression y in 
+			let expr_z 	= curry_type_expression z in
+			let (res,par)	= has_common_parent (Located.mk_elem (get_type expr_y) y.eloc) (Located.mk_elem (get_type expr_z) z.eloc) in
+				begin
+				match cond,res,par with
+				| (true,true,_)	-> {edesc=If(expr_x,expr_y,expr_z);etype=(Some par);eloc=e.eloc} 
+				| (true,_,_) 		-> incorrect_type (get_type expr_y) (get_type expr_z) y.eloc
+				| (_,_,_)				-> incorrect_type (get_type expr_x) (fromString "Boolean") x.eloc
+				end
+		| Val v 	-> {edesc=Val v;etype=Some (value_type v);eloc=e.eloc}
+		|	Var str -> 
+			begin
+			match str with
+				| "this" -> {edesc=Var str;etype=Some class_name;eloc=e.eloc}
+				| _			 -> {edesc=Var str;etype=Some (find_type class_name args_table local_table e.eloc str);eloc=e.eloc}
+			end
+		| Assign (str,x) -> 
+			let var_type = find_type class_name args_table local_table e.eloc str in
+			let typed_exp = curry_type_expression x in
+			begin
+			match (var_type,typed_exp.etype) with
+				| _ as t1, Some t2 ->
 					begin
-					match str with
-						| "this" -> Some class_name
-						| _	as s -> Some (find_type class_name args_table local_table e.eloc s)
+					match (is_parent (Located.mk_elem t1 typed_exp.eloc) (Located.mk_elem t2 typed_exp.eloc)) with
+						| true -> {edesc=Assign(str,typed_exp);etype=Some t1;eloc=e.eloc}
+						| _ 	 -> incorrect_var_type str t1 t2 e.eloc
 					end
-				| Assign (str,x) -> 
-					let var_type = find_type class_name args_table local_table e.eloc str in
-					let typed_exp = curry_type_expression x in
+				| _ -> non_typed_exp typed_exp.eloc
+			end
+		| Define (str,val_type,x,y)	->
+			let	var_type = Located.elem_of val_type in
+			begin
+			match exists_type var_type with
+				| false	-> non_existing_class var_type (Located.loc_of val_type)
+				| true	->
+					let typed_x = curry_type_expression x in
 					begin
-					match (var_type,typed_exp.etype) with
-						| _ as t1, Some t2 ->
+					match typed_x.etype with
+						| None 	 -> non_typed_exp typed_x.eloc
+						| Some t -> 
 							begin
-							match (is_parent (Located.mk_elem t1 typed_exp.eloc) (Located.mk_elem t2 typed_exp.eloc)) with
-								| true -> Some t1
-								| _ 	 -> incorrect_var_type str t1 t2 e.eloc
-							end
-						| _ -> non_typed_exp typed_exp.eloc
+							match (is_parent val_type (Located.mk_elem t typed_x.eloc)) with
+								| true	->
+									Hashtbl.add local_table str var_type;
+									let typed_y = type_expression class_name args_table local_table y in
+									Hashtbl.remove local_table str;
+									{edesc=Define(str,val_type,typed_x,typed_y);etype=typed_y.etype;eloc=e.eloc}
+								| _ 		-> incorrect_var_type str var_type t typed_x.eloc
+							end	
 					end
-				| Define (str,val_type,x,y)	->
-					let	var_type = Located.elem_of val_type in
-					begin
-					match exists_type var_type with
-						| false	-> non_existing_class var_type (Located.loc_of val_type)
-						| true	->
-							let typed_x = curry_type_expression x in
-							begin
-							match typed_x.etype with
-								| None 	 -> non_typed_exp typed_x.eloc
-								| Some t -> 
-									begin
-									match (is_parent val_type (Located.mk_elem t typed_x.eloc)) with
-										| true	->
-											Hashtbl.add local_table str var_type;
-											let typed_y = type_expression class_name args_table local_table y in
-											Hashtbl.remove local_table str;
-											typed_y.etype
-										| _ 		-> incorrect_var_type str var_type t typed_x.eloc
-									end	
-							end
-					end
-				| Cast (new_type,x)	-> curry_type_expression x; Some (Located.elem_of new_type)
-				| Instanceof (x,t)	-> curry_type_expression x; Some (fromString "Boolean")
-	} in
-	exp
+			end
+		| Cast (new_type,x)	-> {edesc=Cast(new_type,curry_type_expression x);etype=Some (Located.elem_of new_type);eloc=e.eloc}
+		| Instanceof (x,t)	-> {edesc=Instanceof(curry_type_expression x,t);etype=Some (fromString "Boolean");eloc=e.eloc}
 
 (* Type les attributs d'une classe *)
 let type_attribute class_name a = 

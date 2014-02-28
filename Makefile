@@ -11,5 +11,8 @@ syntax: Test/Failure_Syntax/*.mjava
 type: Test/Failure_Type/*.mjava
 	./Main.byte $^
 
+exec: Test/Failure_Execute/*.mjava
+	./Main.byte $^
+
 clean:
 	ocamlbuild -clean

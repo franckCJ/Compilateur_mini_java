@@ -11,7 +11,7 @@ let report_error = function
   | Undefined_attribute s ->
       print_string "The attribute ";
       print_string s;
-      print_string " is not yet instanciated"
+      print_endline " is not yet instanciated"
 
 let unexpected_error loc =
 	raise (Error (Unexpected_Error,loc))

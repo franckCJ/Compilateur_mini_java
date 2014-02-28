@@ -1,0 +1,16 @@
+class Fibo
+{
+	Int fibo(Int n, Int seed1, Int seed2)
+	{
+		if(n==0)
+		(
+			seed1
+		)
+		else
+		(
+			this.fibo((n-1), seed2, (seed1+seed2))
+		)
+	}	
+}
+	
+(new Fibo).fibo(23,0,1)
