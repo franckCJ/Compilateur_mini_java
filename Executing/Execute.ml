@@ -2,12 +2,25 @@ open Env
 open AST
 open ExecError
 
+(**
+ * Type contenant les valeurs pour l'évaluation
+ *)
+
 type ev_value =
 	| String of string
 	| Int of int
 	| Null
 	| Boolean of bool
 	| Object of Type.t * ev_value list
+
+(**
+ * Trouve une méthode dans une liste de nom préfixés
+ * 
+ * Prend le nom de la méthode à trouver
+ * Prend la liste dans laquelle rechercher
+ *
+ * Renvoie le nom de la méthode trouvée
+ *)
 
 let rec find_name meth = function
 	| []		-> ""
@@ -19,18 +32,36 @@ let rec find_name meth = function
 		in 
 		let end_index = String.length h in
 		let sub_string = String.sub h beg_index (end_index-beg_index) in
-		print_endline sub_string;
 		begin
 		match String.compare sub_string meth with
 			| 0	-> h
 			| _	-> find_name meth t
 		end
 
+(**
+ * Récupère une méthode pour un objet donné
+ * 
+ * Prend les tables globales
+ * Prend le type de l'objet pour lequel la méthode est recherchée
+ * Prend le nom le nom de la méthode à trouver
+ *
+ * Renvoie la méthode trouvée
+ *)
+
 let get_method meth_table class_desc (val_type,values) meth =
 	let parent::meths = find class_desc val_type in
 	let meth_name = find_name meth meths in
-	print_endline meth_name;
 	find meth_table meth_name
+
+(**
+ * Récupère l'index de position d'un nom recherché dans une liste
+ * 
+ * Prend l'accumulateur pour la position
+ * Prend le nom à rechercher
+ * Prend la liste
+ *
+ * Renvoie la position
+ *)
 
 let rec find_att_index acc str = function
 	| []		-> unexpected_error Location.none
@@ -39,12 +70,27 @@ let rec find_att_index acc str = function
 			| 0	-> acc
 			|	_	-> find_att_index (acc+1) str t
 
+(**
+ * Crée un environnement local à l'appel d'une fonction
+ * 
+ * Prend la liste des valeurs passées en argument
+ * Prend la liste des arguments
+ *
+ * Renvoie l'environnement
+ *)
+	
 let create_env value_list args =
 	let env = initial() in
-	print_endline "*************";
-	List.iter (fun a -> print_endline a) args;
 	List.fold_left2 (fun hash a b -> define hash a b) env args value_list
 
+(**
+ * Compare deux valeurs de même type
+ * 
+ * Prend les valeurs à comparer
+ *
+ * Renvoie un booléen résultat de la comparaison
+ *)
+	
 let rec compare_values val1 val2 =
 	match val1,val2 with
 		| Int i1, Int i2					-> i1 == i2
@@ -60,18 +106,40 @@ let rec compare_values val1 val2 =
 		| Object (t1,l1), Object (t2,l2)		-> compare_object (t1,l1) (t2,l2)
 		| _																	-> unexpected_error Location.none
 
+(**
+ * Compare deux objets
+ * 
+ * Prend les objets à comparer
+ *
+ * Renvoie un booléen résultat de la comparaison
+ *)
+	
 and compare_object (t1,l1) (t2,l2) =
 	match l1,l2 with
 		| [],[]					-> true
 		| h1::q1,[]			-> false
 		| [],h2::q2			-> false
 		| h1::q1,h2::q2	-> (compare_values h1 h2) && (compare_object (t1,q1) (t2,q2))
-			
+
+(**
+ * Evalue les valeurs venant de l'Ast et renvoie la valeur 
+ * correspondante pour l'évaluation
+ *)
+		
 let evaluate_value = function
 	| AST.String s 	-> String s
 	| AST.Int i 		-> Int i
 	| AST.Null 			-> Null
 	| AST.Boolean b -> Boolean b
+	
+(**
+ * Crée une valeur du type envoyé en argument
+ *
+ * Prend les tables globales de description
+ * Prend le type de la valeur à créer
+ *
+ * Renvoie une valeur
+ *)
 
 let rec create_object meth_table class_desc object_desc obj_val =
 	match Type.stringOf obj_val with
@@ -82,21 +150,19 @@ let rec create_object meth_table class_desc object_desc obj_val =
 			let att_list = find object_desc obj_val in
 			Object (obj_val,evaluate_attributes obj_val meth_table class_desc object_desc (initial()) att_list)
 (**
- * Evalue les 
- * les tables a jour
+ * Evalue l'ensemble des attributs avec leurs valeurs par défaut lors de
+ * l'initialisation d'un objet
  *
- * Prend en entrée les tables de méthodes, de descripteurs de classe et de
- * descripteur d'objet
- * Prend l'expression à évaluer
+ * Prend en entrée les tables globales
+ * Prend l'environnement local à l'initialisation de l'objet
+ * Prend la liste des attributs à initialiser
  *
- * Imprime la valeur retournée par l'évaluation
+ * Renvoie la liste des attributs initialisés
  *)
 
 and evaluate_attributes obj_val meth_table class_desc object_desc env = function
 	| []		-> []
 	| (name,expr)::t	->
-		print_string "Initialisation d'attribut : ";
-		print_endline name;
 		match expr with
 			| None				-> 
 				let new_env = define env name Null in
@@ -204,11 +270,8 @@ and evaluate_call meth_table class_desc object_desc env op value value_list =
 			begin
 			match value with
 				| Object (t,v)	->
-					print_endline meth;
 					let meth_body,args = get_method meth_table class_desc (t,v) meth in
 					let local_env = create_env value_list args in
-					print_endline (Type.stringOf t);
-					print_endline (string_of_int (List.length v));
 					let env,eval_val = evaluate_expression meth_table class_desc object_desc value local_env meth_body in
 					eval_val
 				| _ -> unexpected_error Location.none
@@ -267,9 +330,7 @@ and evaluate_expression meth_table class_desc object_desc env_object env e =
 			let local_env = replace new_env str value_x in
 			local_env,value_x
 		| AST.Define (str,val_type,x,y)	->
-			print_endline "ici";
 			let new_env,value_x = curry_evaluate x in
-			print_endline "initialisation faire";
 			let local_env = define new_env str value_x in
 			let new_env,eval_value = evaluate_expression meth_table class_desc object_desc env_object local_env y in
 			env,eval_value
@@ -293,6 +354,7 @@ let evaluate_program ((meth_table,class_desc,object_desc),e_op) =
 	match e_op with
 		| None 			-> print_endline "Nothing to do"
 		| Some exp	->
+			print_string "Result : ";
 			let env,value = evaluate_expression meth_table class_desc object_desc (Object ((Type.fromString "Object"),[])) (initial()) exp in
 			match value with
 				| String s	-> print_endline s
